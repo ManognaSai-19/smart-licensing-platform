@@ -19,10 +19,12 @@ import {
   X,
   History,
   TrendingUp,
+  FlaskConical,
 } from 'lucide-react';
+import { ResearchBenchmarkView } from './ResearchBenchmarkView';
 
 export const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'applications' | 'catalogue' | 'audit' | 'analytics'>('applications');
+  const [activeTab, setActiveTab] = useState<'applications' | 'catalogue' | 'audit' | 'analytics' | 'benchmark'>('applications');
 
   // Stats state
   const [stats, setStats] = useState<SystemStats | null>(null);
@@ -329,6 +331,17 @@ export const AdminDashboard: React.FC = () => {
           >
             <TrendingUp className="w-4 h-4" /> Status Breakdown
           </button>
+
+          <button
+            onClick={() => setActiveTab('benchmark')}
+            className={`py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
+              activeTab === 'benchmark'
+                ? 'border-indigo-600 text-indigo-600 font-semibold'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <FlaskConical className="w-4 h-4" /> Research & Benchmarks
+          </button>
         </nav>
       </div>
 
@@ -629,6 +642,11 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 5: Research Evaluation & Benchmarks */}
+      {activeTab === 'benchmark' && (
+        <ResearchBenchmarkView />
       )}
 
       {/* Create Service Modal */}

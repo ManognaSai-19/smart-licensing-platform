@@ -14,12 +14,14 @@ import {
   LogOut,
   UserCheck,
   ShieldCheck,
+  FlaskConical,
 } from 'lucide-react';
 import { ServiceCatalogue } from './components/ServiceCatalogue';
 import { VoiceDashboard } from './components/VoiceDashboard';
 import { CitizenDashboard } from './components/CitizenDashboard';
 import { OfficerDashboard } from './components/OfficerDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import { ResearchBenchmarkView } from './components/ResearchBenchmarkView';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
 
@@ -39,7 +41,7 @@ interface HealthData {
 
 function MainApp() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'citizen' | 'officer' | 'admin' | 'catalogue' | 'voice' | 'health'>('citizen');
+  const [activeTab, setActiveTab] = useState<'citizen' | 'officer' | 'admin' | 'catalogue' | 'voice' | 'research' | 'health'>('citizen');
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +189,18 @@ function MainApp() {
               </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('research')}
+                className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                  activeTab === 'research'
+                    ? 'bg-white text-indigo-700 shadow-sm font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FlaskConical className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Research Benchmark</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setActiveTab('health')}
                 className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                   activeTab === 'health'
@@ -239,6 +253,8 @@ function MainApp() {
           <ServiceCatalogue />
         ) : activeTab === 'voice' ? (
           <VoiceDashboard />
+        ) : activeTab === 'research' ? (
+          <ResearchBenchmarkView />
         ) : (
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
