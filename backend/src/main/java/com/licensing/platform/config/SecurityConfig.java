@@ -64,9 +64,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> {}) // Uses WebConfig CORS mapping
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.deny())
+                        .frameOptions(frame -> frame.sameOrigin())
                         .contentTypeOptions(contentType -> {})
-                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; frame-ancestors 'none';"))
+                        .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self' 'unsafe-inline' data:; frame-ancestors 'self';"))
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(unauthorizedHandler)
@@ -80,7 +80,8 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/health",
-                                "/actuator/**"
+                                "/actuator/**",
+                                "/h2-console/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/departments", "/api/departments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services", "/api/services/**").permitAll()
