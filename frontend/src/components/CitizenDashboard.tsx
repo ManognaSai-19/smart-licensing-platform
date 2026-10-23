@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { ApplicationDetail, ApplicationSummary } from '../types/application';
 import { applicationApi } from '../services/applicationApi';
 import { ApplicationWizard } from './ApplicationWizard';
 import { ApplicationDetailView } from './ApplicationDetailView';
-import { AuthModal } from './AuthModal';
 import {
   FileText,
   Plus,
@@ -15,32 +13,50 @@ import {
   Search,
   Eye,
   RefreshCw,
-  ShieldCheck,
   Building,
   Calendar,
   ArrowRight,
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react';
 
 export const CitizenDashboard: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Modals state
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  // Quick "Check Status" state
+  const [statusSearchRef, setStatusSearchRef] = useState<string>('');
+  const [statusSearchResult, setStatusSearchResult] = useState<ApplicationSummary | null>(null);
+  const [statusSearchError, setStatusSearchError] = useState<string | null>(null);
+
+  // Wizard & Details Modals
   const [isWizardOpen, setIsWizardOpen] = useState<boolean>(false);
   const [wizardApp, setWizardApp] = useState<ApplicationDetail | null>(null);
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
 
+  // Map to store rejection reasons for quick display
+  const [rejectionReasons, setRejectionReasons] = useState<Record<number, string>>({});
+
   const loadApplications = async () => {
-    if (!isAuthenticated) return;
     setLoading(true);
     try {
       const data = await applicationApi.getMyApplications();
       setApplications(data);
+
+      // Pre-fetch rejection reasons for any rejected applications
+      const rejectedList = data.filter((a) => a.status === 'REJECTED');
+      const reasonsMap: Record<number, string> = {};
+      for (const item of rejectedList) {
+        try {
+          const detail = await applicationApi.getApplicationById(item.id);
+          if (detail.reviewDecisions && detail.reviewDecisions.length > 0) {
+            reasonsMap[item.id] = detail.reviewDecisions[0].reason || 'Criteria mismatch';
+          }
+        } catch {
+          // ignore
+        }
+      }
+      setRejectionReasons(reasonsMap);
     } catch (err) {
       console.warn('Could not load citizen applications:', err);
     } finally {
@@ -49,31 +65,8 @@ export const CitizenDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadApplications();
-    }
-  }, [isAuthenticated]);
-
-  // Filtered applications
-  const filteredApps = applications.filter((app) => {
-    const matchesStatus =
-      statusFilter === 'ALL' || app.status === statusFilter;
-    const matchesSearch =
-      searchQuery === '' ||
-      app.referenceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.departmentName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
-  // Calculate statistics
-  const totalApps = applications.length;
-  const draftApps = applications.filter((a) => a.status === 'DRAFT').length;
-  const pendingApps = applications.filter(
-    (a) => a.status === 'SUBMITTED' || a.status === 'UNDER_VERIFICATION' || a.status === 'RESUBMITTED'
-  ).length;
-  const approvedApps = applications.filter((a) => a.status === 'APPROVED').length;
-  const rejectedApps = applications.filter((a) => a.status === 'REJECTED').length;
+    loadApplications();
+  }, []);
 
   const handleOpenWizard = (appToEdit?: ApplicationDetail) => {
     setWizardApp(appToEdit || null);
@@ -85,348 +78,284 @@ export const CitizenDashboard: React.FC = () => {
     handleOpenWizard(app);
   };
 
+  // Quick Check Status handler
+  const handleCheckStatus = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatusSearchError(null);
+    setStatusSearchResult(null);
+
+    const ref = statusSearchRef.trim();
+    if (!ref) {
+      setStatusSearchError('Please enter an application reference number.');
+      return;
+    }
+
+    const found = applications.find(
+      (a) => a.referenceNumber.toLowerCase() === ref.toLowerCase()
+    );
+
+    if (found) {
+      setStatusSearchResult(found);
+    } else {
+      setStatusSearchError(`No application found with reference "${ref}".`);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>APPROVED</span>
           </span>
         );
       case 'REJECTED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
-            <XCircle className="w-3 h-3 text-red-600" />
-            <span>REJECTED</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
+            <XCircle className="w-3.5 h-3.5 text-rose-600" />
+            <span>ACTION REQUIRED</span>
           </span>
         );
       case 'UNDER_VERIFICATION':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
-            <Clock className="w-3 h-3 text-amber-600" />
-            <span>VERIFYING</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <span>IN REVIEW</span>
           </span>
         );
       case 'SUBMITTED':
       case 'RESUBMITTED':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">
-            <Clock className="w-3 h-3 text-indigo-600" />
-            <span>{status}</span>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800">
+            <Clock className="w-3.5 h-3.5 text-blue-600" />
+            <span>SUBMITTED</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
             <span>DRAFT</span>
           </span>
         );
     }
   };
 
-  // If citizen is NOT logged in: Show accessible landing & login trigger
-  if (!isAuthenticated) {
-    return (
-      <div className="space-y-6">
-        {/* Guest Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
-          <div className="max-w-2xl relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-indigo-200">
-              <ShieldCheck className="w-4 h-4 text-indigo-400" />
-              <span>Citizen Access Portal</span>
-            </div>
-            <h2 className="text-3xl font-extrabold tracking-tight">
-              Manage Your Digital Licenses & Applications
-            </h2>
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Sign in to your citizen account to start new digital applications with hands-free voice assistance, view pre-screening verification findings, upload secure documents, and track approval status in real-time.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md transition-all"
-              >
-                Sign In to Citizen Portal →
-              </button>
-              <button
-                type="button"
-                onClick={() => { setAuthMode('register'); setIsAuthModalOpen(true); }}
-                className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl text-sm border border-white/20 transition-all"
-              >
-                Register New Account
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Highlights Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-              1
-            </div>
-            <h3 className="text-base font-bold text-slate-900">Voice-Guided Form Completion</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Complete complex licensing forms effortlessly in Telugu or English with automatic spoken audio prompts and read-back confirmation.
-            </p>
-          </div>
-
-          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-              2
-            </div>
-            <h3 className="text-base font-bold text-slate-900">Explainable Pre-Screening</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Before final submission, the system pre-screens your uploaded documents and highlights any discrepancies so you can fix them early.
-            </p>
-          </div>
-
-          <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              3
-            </div>
-            <h3 className="text-base font-bold text-slate-900">Transparent Official Adjudication</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Track departmental verification progress in real-time. If an application requires correction, view clear officer feedback and resubmit easily.
-            </p>
-          </div>
-        </div>
-
-        {/* Auth Modal */}
-        {isAuthModalOpen && (
-          <AuthModal
-            isOpen={isAuthModalOpen}
-            defaultMode={authMode}
-            onClose={() => setIsAuthModalOpen(false)}
-            onSuccess={() => loadApplications()}
-          />
-        )}
-      </div>
-    );
-  }
-
-  // If citizen IS logged in: Render Full Citizen Dashboard
   return (
-    <div className="space-y-6">
-      {/* Citizen Welcome & Profile Strip */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-            {user?.fullName.charAt(0)}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-900">{user?.fullName}</h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                Verified Citizen
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {user?.email} {user?.phoneNumber ? `&bull; ${user.phoneNumber}` : ''}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => handleOpenWizard()}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow transition-colors flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Application</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={logout}
-            className="px-4 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs transition-colors"
-          >
-            Sign Out
-          </button>
-        </div>
-      </div>
-
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center">
-          <span className="text-xs text-slate-400 font-medium uppercase block">Total</span>
-          <span className="text-2xl font-bold text-slate-900 mt-1 block">{totalApps}</span>
-          <span className="text-[11px] text-slate-500">All submissions</span>
-        </div>
-
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center">
-          <span className="text-xs text-slate-400 font-medium uppercase block">In Draft</span>
-          <span className="text-2xl font-bold text-slate-700 mt-1 block">{draftApps}</span>
-          <span className="text-[11px] text-slate-500">Unsubmitted</span>
-        </div>
-
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center">
-          <span className="text-xs text-amber-600 font-medium uppercase block">Verifying</span>
-          <span className="text-2xl font-bold text-amber-700 mt-1 block">{pendingApps}</span>
-          <span className="text-[11px] text-amber-600">Under review</span>
-        </div>
-
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center">
-          <span className="text-xs text-emerald-600 font-medium uppercase block">Approved</span>
-          <span className="text-2xl font-bold text-emerald-700 mt-1 block">{approvedApps}</span>
-          <span className="text-[11px] text-emerald-600">Active licenses</span>
-        </div>
-
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm text-center col-span-2 md:col-span-1">
-          <span className="text-xs text-red-600 font-medium uppercase block">Action Needed</span>
-          <span className="text-2xl font-bold text-red-700 mt-1 block">{rejectedApps}</span>
-          <span className="text-[11px] text-red-600">Rejected / Resubmit</span>
-        </div>
-      </div>
-
-      {/* Applications Table & Controls */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-4">
-        {/* Controls Toolbar */}
-        <div className="p-5 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50">
-          <div>
-            <h3 className="text-base font-bold text-slate-900">My Applications</h3>
-            <p className="text-xs text-slate-500">Track and manage your licensing application dossier.</p>
+    <div className="space-y-5 p-4 sm:p-5">
+      {/* SECTION 1: APPLY FOR A LICENSE (HERO ACTION CARD) */}
+      <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-700 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
+        <div className="relative z-10 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-semibold text-indigo-100">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-200" />
+            <span>Digital Government Services</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search reference or service..."
-                className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none w-full sm:w-56"
-              />
-            </div>
+          <h2 className="text-xl font-extrabold tracking-tight">Apply for a License</h2>
+          <p className="text-xs text-indigo-100 leading-relaxed max-w-xs">
+            Apply for driving licenses, municipal trade permits, and certificates with step-by-step guidance.
+          </p>
 
-            {/* Status Filter Dropdown */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-            >
-              <option value="ALL">All Statuses ({applications.length})</option>
-              <option value="DRAFT">Draft</option>
-              <option value="SUBMITTED">Submitted</option>
-              <option value="UNDER_VERIFICATION">Under Verification</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Action Required / Rejected</option>
-            </select>
-
+          <div className="pt-2">
             <button
               type="button"
-              onClick={loadApplications}
-              disabled={loading}
-              title="Refresh list"
-              className="p-2 bg-white border border-slate-300 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
+              onClick={() => handleOpenWizard()}
+              className="w-full py-3 px-4 bg-white text-indigo-900 font-bold rounded-2xl text-xs shadow hover:bg-indigo-50 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <Plus className="w-4 h-4 text-indigo-700 stroke-[3]" />
+              <span>Apply for New License</span>
+              <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Applications List */}
-        <div className="divide-y divide-slate-100">
-          {loading ? (
-            <div className="py-12 text-center space-y-2">
-              <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-xs text-slate-400">Loading your applications...</p>
+      {/* SECTION 2: CHECK STATUS (SEARCH CARD) */}
+      <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+        <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+          <Search className="w-4 h-4 text-indigo-600" />
+          <span>Check Application Status</span>
+        </div>
+
+        <form onSubmit={handleCheckStatus} className="space-y-2">
+          <div className="relative">
+            <input
+              type="text"
+              value={statusSearchRef}
+              onChange={(e) => setStatusSearchRef(e.target.value)}
+              placeholder="Enter Reference (e.g. APP-20261023-...)"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-2xl text-xs shadow-sm transition"
+          >
+            Check Status
+          </button>
+        </form>
+
+        {statusSearchError && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+            <span>{statusSearchError}</span>
+          </div>
+        )}
+
+        {statusSearchResult && (
+          <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-xs font-bold text-indigo-900">
+                {statusSearchResult.referenceNumber}
+              </span>
+              {getStatusBadge(statusSearchResult.status)}
             </div>
-          ) : filteredApps.length === 0 ? (
-            <div className="py-16 text-center space-y-3">
-              <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-              <div>
-                <h4 className="text-sm font-bold text-slate-800">No applications found</h4>
-                <p className="text-xs text-slate-400 mt-1">
-                  {applications.length === 0
-                    ? 'You have not submitted or drafted any licensing applications yet.'
-                    : 'No applications match your active search or filter.'}
-                </p>
-              </div>
-              {applications.length === 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleOpenWizard()}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold shadow hover:bg-indigo-700 transition-colors inline-flex items-center gap-1.5"
+            <p className="text-xs font-semibold text-slate-800">{statusSearchResult.serviceName}</p>
+            <p className="text-[11px] text-slate-500">
+              Department: {statusSearchResult.departmentName} &bull; Applied: {new Date(statusSearchResult.createdAt).toLocaleDateString()}
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSelectedAppId(statusSearchResult.id)}
+              className="w-full mt-2 py-1.5 bg-indigo-600 text-white font-bold text-[11px] rounded-xl hover:bg-indigo-700 transition"
+            >
+              View Full Status & Timeline →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 3: APPLIED TILL NOW (APPLICATION HISTORY) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-sm font-bold text-slate-900">Applied Till Now</h3>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+              {applications.length}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={loadApplications}
+            disabled={loading}
+            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-1"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        {loading && applications.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400">Loading your applications...</div>
+        ) : applications.length === 0 ? (
+          <div className="bg-white rounded-3xl p-8 border border-slate-200/80 text-center space-y-3">
+            <FileText className="w-10 h-10 text-slate-300 mx-auto" />
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">No applications applied yet</h4>
+              <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                Tap the "Apply for a License" card above to submit your first digital application.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {applications.map((item) => {
+              const isRejected = item.status === 'REJECTED';
+              const rejectionReason = rejectionReasons[item.id];
+
+              return (
+                <div
+                  key={item.id}
+                  className={`bg-white rounded-3xl p-4 border transition-all ${
+                    isRejected
+                      ? 'border-rose-300 shadow-md ring-1 ring-rose-200'
+                      : 'border-slate-200/80 shadow-sm hover:border-slate-300'
+                  }`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Start First Application</span>
-                </button>
-              )}
-            </div>
-          ) : (
-            filteredApps.map((item) => (
-              <div
-                key={item.id}
-                className="p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
+                  {/* Card Header */}
+                  <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs font-bold text-indigo-700">
                       {item.referenceNumber}
                     </span>
                     {getStatusBadge(item.status)}
                   </div>
-                  <h4 className="text-sm font-bold text-slate-900">{item.serviceName}</h4>
-                  <div className="flex items-center gap-3 text-xs text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <Building className="w-3 h-3" />
-                      <span>{item.departmentName}</span>
-                    </span>
-                    <span>&bull;</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                    </span>
+
+                  {/* Card Title & Info */}
+                  <div className="mt-2 space-y-1">
+                    <h4 className="text-sm font-bold text-slate-900">{item.serviceName}</h4>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                      <span className="inline-flex items-center gap-1">
+                        <Building className="w-3 h-3 text-slate-400" />
+                        <span>{item.departmentName}</span>
+                      </span>
+                      <span>&bull;</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-slate-400" />
+                        <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* PROMINENT REJECTION REASON & FIX OPTION */}
+                  {isRejected && (
+                    <div className="mt-3 p-3 bg-rose-50/90 border border-rose-200 rounded-2xl space-y-2">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-rose-900">Why was this rejected?</p>
+                          <p className="text-xs text-rose-700 mt-0.5">
+                            {rejectionReason || 'Document clarity or verification mismatch identified by reviewing officer.'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const full = await applicationApi.getApplicationById(item.id);
+                          handleOpenWizard(full);
+                        }}
+                        className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Fix Application & Resubmit</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Card Actions */}
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAppId(item.id)}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-1"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View Dossier & Timeline</span>
+                    </button>
+
+                    {item.status === 'DRAFT' && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const full = await applicationApi.getApplicationById(item.id);
+                          handleOpenWizard(full);
+                        }}
+                        className="px-3 py-1 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition"
+                      >
+                        Continue Draft →
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                  {item.status === 'DRAFT' ? (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const full = await applicationApi.getApplicationById(item.id);
-                        handleOpenWizard(full);
-                      }}
-                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
-                    >
-                      <span>Continue Draft</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  ) : item.status === 'REJECTED' ? (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const full = await applicationApi.getApplicationById(item.id);
-                        handleOpenWizard(full);
-                      }}
-                      className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Action Required / Resubmit</span>
-                    </button>
-                  ) : null}
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedAppId(item.id)}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View Dossier</span>
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Guided Wizard Modal */}
