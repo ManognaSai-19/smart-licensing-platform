@@ -174,9 +174,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
     >
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95">
         {/* Wizard Header */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#101828] text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow">
+            <div className="w-9 h-9 rounded-xl bg-[#2563EB] flex items-center justify-center shadow">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -185,7 +185,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   {existingApplication ? 'Continue Application' : 'New Digital Application'}
                 </h2>
                 {application?.referenceNumber && (
-                  <span className="text-xs font-mono bg-indigo-900/80 text-indigo-200 px-2 py-0.5 rounded">
+                  <span className="text-xs font-mono bg-[#EAF2FF] text-[#2563EB] px-2 py-0.5 rounded font-bold">
                     {application.referenceNumber}
                   </span>
                 )}
@@ -203,7 +203,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 type="button"
                 onClick={() => setLanguage('en')}
                 className={`px-2.5 py-1 rounded transition-colors ${
-                  language === 'en' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                  language === 'en' ? 'bg-[#2563EB] text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 EN
@@ -212,7 +212,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 type="button"
                 onClick={() => setLanguage('te')}
                 className={`px-2.5 py-1 rounded transition-colors ${
-                  language === 'te' ? 'bg-indigo-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                  language === 'te' ? 'bg-[#2563EB] text-white font-bold' : 'text-slate-400 hover:text-white'
                 }`}
               >
                 తెలుగు
@@ -230,7 +230,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
         </div>
 
         {/* Step Indicator Bar */}
-        <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 overflow-x-auto">
+        <div className="bg-[#F8FAFC] border-b border-slate-200 px-6 py-3 overflow-x-auto">
           <div className="flex items-center justify-between min-w-[500px]">
             {steps.map((s, idx) => {
               const isCurrent = step === s.num;
@@ -243,18 +243,18 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     }}
                     className={`flex items-center gap-2 cursor-pointer ${
                       isCurrent
-                        ? 'text-indigo-600 font-bold'
+                        ? 'text-[#2563EB] font-bold'
                         : isPast
-                        ? 'text-emerald-700 font-medium'
+                        ? 'text-[#15803D] font-medium'
                         : 'text-slate-400 font-medium'
                     }`}
                   >
                     <span
                       className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                         isCurrent
-                          ? 'bg-indigo-600 text-white shadow-sm'
+                          ? 'bg-[#2563EB] text-white shadow-sm'
                           : isPast
-                          ? 'bg-emerald-600 text-white'
+                          ? 'bg-[#15803D] text-white'
                           : 'bg-slate-200 text-slate-600'
                       }`}
                     >
@@ -335,9 +335,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           {step === 2 && serviceDetail && (
             <div className="space-y-6">
               {/* Hands-Free Voice Assistant CTA Banner */}
-              <div className="bg-gradient-to-r from-indigo-700 to-purple-800 text-white p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="bg-gradient-to-r from-[#101828] via-[#162544] to-[#2563EB] text-white p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center flex-shrink-0">
                     <Mic className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -347,7 +347,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         Telugu & English
                       </span>
                     </h4>
-                    <p className="text-xs text-indigo-100 mt-0.5">
+                    <p className="text-xs text-[#EAF2FF] mt-0.5">
                       You can fill the entire form through step-by-step spoken voice prompts with automatic read-back verification.
                     </p>
                   </div>
@@ -356,9 +356,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsVoiceAssistantOpen(true)}
-                  className="px-4 py-2 bg-white text-indigo-900 font-bold rounded-xl text-xs hover:bg-indigo-50 shadow transition-all whitespace-nowrap flex items-center gap-1.5"
+                  className="px-4 py-2 bg-white text-[#2563EB] hover:bg-[#EAF2FF] font-bold rounded-xl text-xs shadow transition-all whitespace-nowrap flex items-center gap-1.5"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
                   <span>Launch Voice Assistant</span>
                 </button>
               </div>
@@ -596,7 +596,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 type="button"
                 onClick={handleSaveDraft}
                 disabled={savingDraft}
-                className="px-4 py-2 border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+                className="px-4 py-2 border border-[#cfe0fc] bg-[#EAF2FF] text-[#2563EB] hover:bg-[#dbe9fe] rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>{savingDraft ? 'Saving...' : 'Save Draft'}</span>
@@ -613,7 +613,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                     }
                     setStep((prev) => Math.min(prev + 1, 5));
                   }}
-                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl text-xs shadow transition-colors flex items-center gap-1.5"
                 >
                   <span>Continue</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -624,7 +624,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 type="button"
                 onClick={handleSubmitApplication}
                 disabled={submitting}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 bg-[#15803D] hover:bg-[#166534] text-white font-bold rounded-xl text-xs shadow-md transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
                 <span>{submitting ? 'Submitting...' : 'Submit Application'}</span>

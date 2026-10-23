@@ -63,27 +63,27 @@ export const MobileAuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen bg-[#101828] flex flex-col justify-center items-center p-4">
       {/* Mobile Frame Container */}
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden flex flex-col">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-700/50 overflow-hidden flex flex-col">
         {/* App Top Branding */}
-        <div className="bg-gradient-to-br from-indigo-700 via-indigo-600 to-blue-700 text-white p-7 text-center relative overflow-hidden">
-          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mx-auto mb-3 shadow-inner">
+        <div className="bg-gradient-to-br from-[#101828] via-[#162544] to-[#2563EB] text-white p-7 text-center relative overflow-hidden">
+          <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Shield className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-xl font-extrabold tracking-tight">Smart Licensing</h1>
-          <p className="text-xs text-indigo-100 mt-1 font-medium">Digital Public Services & Licensing</p>
+          <p className="text-xs text-[#EAF2FF] mt-1 font-medium">Digital Public Services & Licensing</p>
         </div>
 
         {/* Tab Toggle: Sign In / Register */}
-        <div className="flex border-b border-slate-200 bg-slate-50 text-xs font-bold">
+        <div className="flex border-b border-slate-200 bg-[#F8FAFC] text-xs font-bold">
           <button
             type="button"
             onClick={() => { setMode('login'); setError(null); }}
             className={`flex-1 py-3 text-center transition-colors ${
               mode === 'login'
-                ? 'bg-white text-indigo-700 border-b-2 border-indigo-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white text-[#2563EB] border-b-2 border-[#2563EB] shadow-sm'
+                : 'text-slate-500 hover:text-[#101828]'
             }`}
           >
             Sign In
@@ -93,8 +93,8 @@ export const MobileAuthScreen: React.FC = () => {
             onClick={() => { setMode('register'); setError(null); }}
             className={`flex-1 py-3 text-center transition-colors ${
               mode === 'register'
-                ? 'bg-white text-indigo-700 border-b-2 border-indigo-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white text-[#2563EB] border-b-2 border-[#2563EB] shadow-sm'
+                : 'text-slate-500 hover:text-[#101828]'
             }`}
           >
             New Register
@@ -102,7 +102,7 @@ export const MobileAuthScreen: React.FC = () => {
         </div>
 
         {/* Auth Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 bg-white">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
@@ -113,7 +113,7 @@ export const MobileAuthScreen: React.FC = () => {
           {mode === 'register' && (
             <>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                <label className="block text-xs font-bold text-[#101828] mb-1">Full Name</label>
                 <div className="relative">
                   <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   <input
@@ -122,13 +122,13 @@ export const MobileAuthScreen: React.FC = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-xs text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Phone Number</label>
+                <label className="block text-xs font-bold text-[#101828] mb-1">Mobile Phone Number</label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   <input
@@ -137,7 +137,7 @@ export const MobileAuthScreen: React.FC = () => {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="10-digit mobile number"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-xs text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
                   />
                 </div>
               </div>
@@ -145,7 +145,7 @@ export const MobileAuthScreen: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+            <label className="block text-xs font-bold text-[#101828] mb-1">Email Address</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
@@ -154,13 +154,13 @@ export const MobileAuthScreen: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
+                className="w-full pl-9 pr-3 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-xs text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
+            <label className="block text-xs font-bold text-[#101828] mb-1">Password</label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               <input
@@ -169,7 +169,7 @@ export const MobileAuthScreen: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white focus:outline-none"
+                className="w-full pl-9 pr-3 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-xs text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
               />
             </div>
           </div>
@@ -177,7 +177,7 @@ export const MobileAuthScreen: React.FC = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {submitting ? (
               <span>Authenticating...</span>
@@ -199,7 +199,7 @@ export const MobileAuthScreen: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickDemo('citizen')}
                 disabled={submitting}
-                className="p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-700 transition text-center"
+                className="p-2 bg-[#F8FAFC] hover:bg-[#EAF2FF] hover:text-[#2563EB] border border-slate-200 rounded-xl text-[11px] font-semibold text-[#101828] transition text-center"
               >
                 👤 Citizen Demo
               </button>
@@ -207,7 +207,7 @@ export const MobileAuthScreen: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickDemo('transport')}
                 disabled={submitting}
-                className="p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-700 transition text-center"
+                className="p-2 bg-[#F8FAFC] hover:bg-[#EAF2FF] hover:text-[#2563EB] border border-slate-200 rounded-xl text-[11px] font-semibold text-[#101828] transition text-center"
               >
                 🚗 Transport Officer
               </button>
@@ -215,7 +215,7 @@ export const MobileAuthScreen: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickDemo('municipal')}
                 disabled={submitting}
-                className="p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-700 transition text-center"
+                className="p-2 bg-[#F8FAFC] hover:bg-[#EAF2FF] hover:text-[#2563EB] border border-slate-200 rounded-xl text-[11px] font-semibold text-[#101828] transition text-center"
               >
                 🏢 Municipal Officer
               </button>
@@ -223,7 +223,7 @@ export const MobileAuthScreen: React.FC = () => {
                 type="button"
                 onClick={() => handleQuickDemo('admin')}
                 disabled={submitting}
-                className="p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 rounded-xl text-[11px] font-semibold text-slate-700 transition text-center"
+                className="p-2 bg-[#F8FAFC] hover:bg-[#EAF2FF] hover:text-[#2563EB] border border-slate-200 rounded-xl text-[11px] font-semibold text-[#101828] transition text-center"
               >
                 ⚡ Platform Admin
               </button>

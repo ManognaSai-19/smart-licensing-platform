@@ -37,19 +37,19 @@ function MainApp() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 sm:py-6 flex justify-center items-center font-sans">
+    <div className="min-h-screen bg-[#101828] sm:py-6 flex justify-center items-center font-sans">
       {/* Smartphone Frame Container */}
-      <div className="w-full sm:max-w-md bg-slate-50 min-h-screen sm:min-h-[850px] sm:max-h-[92vh] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200/80 relative">
+      <div className="w-full sm:max-w-md bg-[#F8FAFC] min-h-screen sm:min-h-[850px] sm:max-h-[92vh] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/40 relative">
         {/* Mobile App Header */}
         <header className="bg-white border-b border-slate-200/80 px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
+            <div className="w-9 h-9 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
               <Shield className="w-4 h-4 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-slate-900 text-sm tracking-tight leading-none">Smart Licensing</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">
+                <span className="font-extrabold text-[#101828] text-sm tracking-tight leading-none">Smart Licensing</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#EAF2FF] text-[#2563EB] border border-[#cfe0fc]">
                   {user?.role || 'CITIZEN'}
                 </span>
               </div>
@@ -72,7 +72,7 @@ function MainApp() {
         </header>
 
         {/* Scrollable Mobile Body */}
-        <main className="flex-1 overflow-y-auto pb-16">
+        <main className="flex-1 overflow-y-auto pb-16 bg-[#F8FAFC]">
           {activeTab === 'citizen' ? (
             <CitizenDashboard />
           ) : activeTab === 'officer' ? (
@@ -102,7 +102,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('citizen')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'citizen' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'citizen' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -113,7 +113,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('catalogue')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'catalogue' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'catalogue' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -128,7 +128,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('officer')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'officer' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'officer' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <UserCheck className="w-4 h-4" />
@@ -139,7 +139,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('catalogue')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'catalogue' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'catalogue' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -154,7 +154,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('admin')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'admin' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'admin' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -165,7 +165,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('catalogue')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'catalogue' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'catalogue' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -176,7 +176,7 @@ function MainApp() {
                 type="button"
                 onClick={() => setActiveTab('research')}
                 className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'research' ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-700'
+                  activeTab === 'research' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
                 }`}
               >
                 <FlaskConical className="w-4 h-4" />

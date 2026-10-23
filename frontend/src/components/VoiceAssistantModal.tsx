@@ -340,7 +340,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-gray-100 overflow-hidden transform transition-all">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-700 via-indigo-800 to-purple-800 px-6 py-5 text-white flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#101828] via-[#162544] to-[#2563EB] px-6 py-5 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white bg-opacity-20 flex items-center justify-center backdrop-blur-md">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,7 +355,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
             <div>
               <h2 className="text-lg font-bold leading-tight flex items-center gap-2">
                 <span>{language === 'te' ? 'వాయిస్ సహాయకుడు' : 'Voice Assistant'}</span>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500 bg-opacity-50">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#EAF2FF]/20 text-[#EAF2FF]">
                   {language === 'te' ? 'తెలుగు' : 'English'}
                 </span>
               </h2>

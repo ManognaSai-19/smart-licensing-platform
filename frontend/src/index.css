@@ -1,10 +1,64 @@
 @import "tailwindcss";
 
+@theme {
+  /* User-Defined Exact Color Palette */
+  --color-midnight-navy: #101828;  /* Navigation, text */
+  --color-royal-blue: #2563eb;     /* Primary actions */
+  --color-ice-blue: #eaf2ff;       /* Highlights */
+  --color-cloud-white: #f8fafc;    /* Page backgrounds */
+  --color-success-green: #15803d;  /* Approved */
+  --color-amber-review: #b45309;   /* Review required */
+
+  /* Palette shortcuts */
+  --color-navy: #101828;
+  --color-royal: #2563eb;
+  --color-ice: #eaf2ff;
+  --color-cloud: #f8fafc;
+  --color-success: #15803d;
+  --color-amber: #b45309;
+
+  /* Brand Scale */
+  --color-brand-50: #eaf2ff;
+  --color-brand-100: #eaf2ff;
+  --color-brand-200: #cfe0fc;
+  --color-brand-300: #9fc1f9;
+  --color-brand-400: #609bf4;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #101828;
+  --color-brand-950: #0a0f1a;
+
+  /* Seamless mapping for existing classes */
+  --color-indigo-50: #eaf2ff;
+  --color-indigo-100: #eaf2ff;
+  --color-indigo-200: #cfe0fc;
+  --color-indigo-300: #9fc1f9;
+  --color-indigo-400: #609bf4;
+  --color-indigo-500: #3b82f6;
+  --color-indigo-600: #2563eb;
+  --color-indigo-700: #1d4ed8;
+  --color-indigo-800: #1e3a8a;
+  --color-indigo-900: #101828;
+  --color-indigo-950: #101828;
+
+  --color-burgundy-50: #eaf2ff;
+  --color-burgundy-100: #eaf2ff;
+  --color-burgundy-200: #cfe0fc;
+  --color-burgundy-500: #2563eb;
+  --color-burgundy-600: #2563eb;
+  --color-burgundy-700: #1d4ed8;
+  --color-burgundy-800: #101828;
+  --color-burgundy-900: #101828;
+  --color-burgundy-950: #0a0f1a;
+}
+
 :root {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1e293b;
+  color: #101828;
   background-color: #f8fafc;
 }
 
