@@ -41,7 +41,12 @@ export const authApi = {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Invalid email or password');
+      let msg = err.message || 'Invalid email or password';
+      if (err.validationErrors && typeof err.validationErrors === 'object') {
+        const errors = Object.values(err.validationErrors).join(', ');
+        if (errors) msg = errors;
+      }
+      throw new Error(msg);
     }
 
     const data: AuthResponse = await res.json();
@@ -66,7 +71,12 @@ export const authApi = {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Registration failed');
+      let msg = err.message || 'Registration failed';
+      if (err.validationErrors && typeof err.validationErrors === 'object') {
+        const errors = Object.values(err.validationErrors).join(', ');
+        if (errors) msg = errors;
+      }
+      throw new Error(msg);
     }
 
     const data: AuthResponse = await res.json();

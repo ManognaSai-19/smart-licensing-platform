@@ -19,7 +19,7 @@ export const MobileAuthScreen: React.FC<MobileAuthScreenProps> = ({
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -205,6 +205,7 @@ export const MobileAuthScreen: React.FC<MobileAuthScreenProps> = ({
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
+                minLength={8}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -218,6 +219,11 @@ export const MobileAuthScreen: React.FC<MobileAuthScreenProps> = ({
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {mode === 'register' && (
+              <span className="text-[10px] text-slate-500 mt-1 block">
+                Must be at least 8 characters (e.g. Password@123)
+              </span>
+            )}
           </div>
 
           {mode === 'login' ? (
