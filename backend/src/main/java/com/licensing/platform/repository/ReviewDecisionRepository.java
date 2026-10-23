@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface ReviewDecisionRepository extends JpaRepository<ReviewDecision, Long> {
     List<ReviewDecision> findByApplicationId(Long applicationId);
+    List<ReviewDecision> findByApplicationIdOrderByDecidedAtDesc(Long applicationId);
     List<ReviewDecision> findByOfficerId(Long officerId);
 }
