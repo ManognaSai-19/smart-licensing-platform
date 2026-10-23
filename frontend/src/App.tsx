@@ -7,8 +7,11 @@ import {
   Cpu,
   ShieldCheck,
   Volume2,
-  AlertTriangle
+  AlertTriangle,
+  Layers,
+  Activity
 } from 'lucide-react';
+import { ServiceCatalogue } from './components/ServiceCatalogue';
 
 interface HealthData {
   status: string;
@@ -25,6 +28,7 @@ interface HealthData {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'catalogue' | 'health'>('catalogue');
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,207 +67,167 @@ export default function App() {
 
   useEffect(() => {
     fetchHealth();
+    const interval = setInterval(fetchHealth, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '32px 20px', width: '100%' }}>
-      {/* Header */}
-      <header style={{ marginBottom: '32px', borderBottom: '1px solid #e2e8f0', paddingBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div>
-            <div style={{ display: 'inline-block', padding: '4px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '12px', fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>
-              Phase 1: Skeleton & Health Checks
+    <div className="min-h-screen bg-slate-100 text-slate-900 font-sans">
+      {/* Top Navigation Bar */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+              SL
             </div>
-            <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' }}>
-              Smart Digital Licensing Platform
-            </h1>
-            <p style={{ color: '#64748b', fontSize: '15px', marginTop: '4px' }}>
-              A Voice-First, Explainable AI Framework for Accessible Digital Applications and Intelligent Document Pre-Screening
-            </p>
+            <div>
+              <h1 className="text-lg font-bold text-slate-900 leading-tight">
+                Smart Digital Licensing Platform
+              </h1>
+              <p className="text-xs text-slate-500">
+                Voice-First Accessible Applications & Pre-Screening Framework
+              </p>
+            </div>
           </div>
-          <button
-            onClick={fetchHealth}
-            disabled={loading}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              background: '#2563eb',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              transition: 'all 0.2s',
-            }}
-          >
-            <RefreshCw size={16} className={loading ? 'spin' : ''} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-            {loading ? 'Checking Health...' : 'Refresh Health'}
-          </button>
+
+          {/* Navigation Tabs */}
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setActiveTab('catalogue')}
+              className={`flex items-center space-x-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'catalogue'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>Service Catalogue</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('health')}
+              className={`flex items-center space-x-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'health'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>System Health</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main Status Panel */}
-      <main style={{ display: 'grid', gap: '24px' }}>
-        <div
-          style={{
-            background: '#ffffff',
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
-            padding: '24px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Server size={24} color="#2563eb" />
-              <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#1e293b' }}>
-                Backend REST API Integration Status
-              </h2>
-            </div>
-            {health && (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  background: '#dcfce7',
-                  color: '#166534',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                }}
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'catalogue' ? (
+          <ServiceCatalogue />
+        ) : (
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">
+                  Core Runtime & Service Connectivity
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Live end-to-end communication diagnostics between frontend Vite proxy and Spring Boot backend.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={fetchHealth}
+                disabled={loading}
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors shadow-sm disabled:opacity-50"
               >
-                <CheckCircle2 size={16} /> Backend Online (Status: {health.status})
-              </span>
-            )}
-            {error && (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 14px',
-                  background: '#fee2e2',
-                  color: '#991b1b',
-                  borderRadius: '16px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                }}
-              >
-                <XCircle size={16} /> Backend Offline
-              </span>
-            )}
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh Now</span>
+              </button>
+            </div>
+
+            {/* Health Status Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Primary Status Card */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                      Overall Health
+                    </span>
+                    <Server className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {loading && !health ? (
+                      <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                    ) : health?.status === 'UP' ? (
+                      <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+                    ) : (
+                      <XCircle className="w-7 h-7 text-rose-600" />
+                    )}
+                    <div>
+                      <div className="text-2xl font-bold text-slate-900">
+                        {loading && !health ? 'Probing...' : health?.status || 'DOWN'}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {health?.service || 'backend-service'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {error && (
+                  <div className="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-start space-x-2">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Latency Card */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                      Roundtrip Latency
+                    </span>
+                    <Cpu className="w-5 h-5 text-slate-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-slate-900">
+                    {latencyMs !== null ? `${latencyMs} ms` : '—'}
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    HTTP proxy round-trip time
+                  </p>
+                </div>
+                <div className="text-xs text-slate-400 pt-4 border-t border-slate-100">
+                  Last checked: {lastChecked || 'Never'}
+                </div>
+              </div>
+
+              {/* Security & Engine */}
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                      Framework & Security
+                    </span>
+                    <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div className="text-sm font-semibold text-slate-800">
+                    Spring Boot 3.3.4 + JJWT 0.12
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Flyway V2 Schema & Seed Data Initialized
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 text-xs text-slate-600 pt-4 border-t border-slate-100">
+                  <Volume2 className="w-4 h-4 text-emerald-600" />
+                  <span>Speech Subsystem: Ready (Web Speech API)</span>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {loading && !health && (
-            <div style={{ textAlign: 'center', padding: '36px 0', color: '#64748b' }}>
-              <p>Connecting to backend API at <code>http://localhost:8080/api/health</code>...</p>
-            </div>
-          )}
-
-          {error && (
-            <div
-              style={{
-                padding: '16px',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '8px',
-                color: '#991b1b',
-                marginBottom: '16px',
-                fontSize: '14px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, marginBottom: '6px' }}>
-                <AlertTriangle size={18} /> Connection Error
-              </div>
-              <p>{error}</p>
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#7f1d1d' }}>
-                Verify that the Spring Boot backend server is running on port 8080.
-              </p>
-            </div>
-          )}
-
-          {health && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Service Name</div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', marginTop: '4px' }}>{health.service}</div>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>API Version</div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', marginTop: '4px' }}>v{health.version}</div>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Round-trip Latency</div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', marginTop: '4px' }}>{latencyMs} ms</div>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>Last Polled</div>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', marginTop: '4px' }}>{lastChecked}</div>
-              </div>
-            </div>
-          )}
-
-          {health?.details && (
-            <div style={{ marginTop: '20px', borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
-              <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#475569', marginBottom: '12px' }}>
-                System Module Configuration (Reported by Live Backend)
-              </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                <span style={{ padding: '6px 12px', background: '#e0e7ff', color: '#3730a3', borderRadius: '6px', fontSize: '13px', fontWeight: 500 }}>
-                  Env: {health.details.environment}
-                </span>
-                <span style={{ padding: '6px 12px', background: '#fef3c7', color: '#92400e', borderRadius: '6px', fontSize: '13px', fontWeight: 500 }}>
-                  Database: {health.details.database}
-                </span>
-                <span style={{ padding: '6px 12px', background: '#f3e8ff', color: '#6b21a8', borderRadius: '6px', fontSize: '13px', fontWeight: 500 }}>
-                  OCR Provider: {health.details.ocrProvider}
-                </span>
-                <span style={{ padding: '6px 12px', background: '#dcfce7', color: '#166534', borderRadius: '6px', fontSize: '13px', fontWeight: 500 }}>
-                  Speech Fallback: {health.details.speechFallback}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* System Blueprints Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <Volume2 size={20} color="#0284c7" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>Voice-First Assistance</h3>
-            </div>
-            <p style={{ fontSize: '14px', color: '#64748b', lineHeight: 1.6 }}>
-              Bilingual support (English & Telugu) via Web Speech API with explicit read-back confirmation and guaranteed text-entry fallback.
-            </p>
-          </div>
-
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <Cpu size={20} color="#7c3aed" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>Explainable Pre-Screening</h3>
-            </div>
-            <p style={{ fontSize: '14px', color: '#64748b', lineHeight: 1.6 }}>
-              Rule-based validation of OCR document extractions against form submissions. Advisory explanations route uncertain cases to human review.
-            </p>
-          </div>
-
-          <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <ShieldCheck size={20} color="#059669" />
-              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>Human-in-the-Loop Security</h3>
-            </div>
-            <p style={{ fontSize: '14px', color: '#64748b', lineHeight: 1.6 }}>
-              Department-scoped officer queue and mandatory rejection reasons. Backend enforces citizen record isolation and role security.
-            </p>
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );

@@ -3,8 +3,8 @@
 ## Project Overview
 - **Title**: Smart Digital Licensing Platform
 - **Subtitle**: A Voice-First, Explainable AI Framework for Accessible Digital Applications and Intelligent Document Pre-Screening
-- **Current Phase**: Phase 3 (Authentication and Authorization)
-- **Status**: Completed Phase 3 implementation, automated test suite (19/19 tests passing), and backend packaging; awaiting user approval to proceed to Phase 4.
+- **Current Phase**: Phase 4 (Configurable Service Catalogue)
+- **Status**: Completed Phase 4 implementation, automated test suite (37/37 tests passing), frontend catalogue browser, and production builds; awaiting user approval to proceed to Phase 5.
 
 ---
 
@@ -15,9 +15,9 @@
 | **Phase 0** | Environment and Architecture | **COMPLETED & APPROVED** | Tool versions verified; architecture, data flow, DB schema, API design, research plan & risks documented. |
 | **Phase 1** | Skeleton and Health Checks | **COMPLETED & APPROVED** | Backend Spring Boot 3 & Frontend React+Vite started locally; live health API communication verified end-to-end. |
 | **Phase 2** | Database Migrations & Persistence | **COMPLETED & APPROVED** | 14 relational tables, 5 enums, 14 JPA entities, 14 repositories; clean Flyway migrations & persistence verified. |
-| **Phase 3** | Authentication and Authorization | **READY FOR APPROVAL** | Stateless JWT, BCrypt, role escalation prevention, citizen IDOR defense, officer department boundaries, audit logging. 19/19 automated tests passing. |
-| **Phase 4** | Configurable Service Catalogue | PENDING | Awaiting Phase 3 approval. |
-| **Phase 5** | Application Workflow & Lifecycle | PENDING | - |
+| **Phase 3** | Authentication and Authorization | **COMPLETED & APPROVED** | Stateless JWT, BCrypt, role escalation prevention, citizen IDOR defense, officer department boundaries, audit logging. |
+| **Phase 4** | Configurable Service Catalogue | **READY FOR APPROVAL** | Dynamic JSON form schemas, multilingual Telugu/English definitions, public catalogue & admin mutation APIs, React interactive service catalogue. 37/37 automated tests passing. |
+| **Phase 5** | Application Workflow & Lifecycle | PENDING | Awaiting Phase 4 approval. |
 | **Phase 6** | Private Document Management | PENDING | - |
 | **Phase 7** | OCR & Explainable Pre-Screening | PENDING | - |
 | **Phase 8** | Voice-First Multilingual Assistance | PENDING | - |
@@ -28,46 +28,42 @@
 
 ---
 
-## Phase 3 Implementation & Verification Evidence
+## Phase 4 Implementation & Verification Evidence
 
 ### 1. Artifacts Created & Configured
-- **Dependencies** (`backend/pom.xml`):
-  - `spring-boot-starter-security`
-  - `spring-boot-starter-validation`
-  - JJWT 0.12.6 (`jjwt-api`, `jjwt-impl`, `jjwt-jackson`)
-  - `spring-security-test`
-- **Security & Authorization Components** (`backend/src/main/java/com/licensing/platform/security/`):
-  - `UserPrincipal`: Implements `UserDetails` encapsulating user ID, email, role authority (`ROLE_CITIZEN`, `ROLE_OFFICER`, `ROLE_ADMIN`), and active status.
-  - `CustomUserDetailsService`: Loads user by email from JPA repository.
-  - `JwtTokenProvider`: Generates HMAC-SHA256 signed JWT tokens containing `userId` and `role` claims with configured expiry (24 hours). Validates signatures, expiration, and malformed tokens.
-  - `JwtAuthenticationFilter`: Extracts Bearer token from `Authorization` header, parses claims, loads principal, and populates `SecurityContextHolder`.
-  - `JwtAuthenticationEntryPoint`: Emits standardized JSON `401 Unauthorized` responses on unauthenticated access attempts (`ErrorResponse`).
-  - `CustomAccessDeniedHandler`: Emits standardized JSON `403 Forbidden` responses on unauthorized role or resource access attempts (`ErrorResponse`).
-  - `ResourceSecurityService`: Enforces resource-level authorization boundaries:
-    - Citizens may only access applications where `application.applicantId == principal.userId`.
-    - Officers may only access applications whose service department matches their active assignment in `officer_department_assignments`.
-    - Admins have read access across all departments.
-- **Security Configuration** (`backend/src/main/java/com/licensing/platform/config/SecurityConfig.java`):
-  - Stateless session management (`SessionCreationPolicy.STATELESS`).
-  - CSRF disabled for stateless JWT REST API.
-  - Public endpoints: `/api/health`, `/api/auth/register`, `/api/auth/login`, `/actuator/**`.
-  - Authenticated endpoints: All other `/api/**` routes require valid JWT.
-  - Method security enabled: `@EnableMethodSecurity(prePostEnabled = true)`.
-  - Password Encoder: `BCryptPasswordEncoder` (strength 10).
-- **DTOs & Exceptions** (`dto/`, `exception/`):
-  - `RegisterRequest`, `LoginRequest`, `AuthResponse`, `UserProfileResponse`, `ErrorResponse`.
-  - `DuplicateResourceException` (maps to HTTP 409 Conflict).
-  - `ResourceNotFoundException` (maps to HTTP 404 Not Found).
-  - `GlobalExceptionHandler`: Centralized controller advice handling validation errors (400), authentication failures (401), access denied (403), duplicate resources (409), and uncaught exceptions (500).
-- **Service & Controller** (`service/AuthService.java`, `controller/AuthController.java`):
-  - `POST /api/auth/register`: Citizen registration with email uniqueness checks, BCrypt password hashing, role escalation prevention (enforces `Role.CITIZEN` regardless of payload), and audit log creation.
-  - `POST /api/auth/login`: Authenticates credentials via `AuthenticationManager`, verifies active status, issues signed JWT, and logs `LOGIN` audit event.
-  - `GET /api/auth/me`: Retrieves authenticated user profile (`id`, `fullName`, `email`, `phone`, `role`, `preferredLanguage`).
-  - `POST /api/auth/logout`: Stateless logout recording `LOGOUT` audit event.
-  - `GET /api/auth/test/application/{applicationId}`: Resource-level authorization test endpoint protected by `@PreAuthorize("@securityService.canAccessApplication(principal, #applicationId)")`.
+- **Backend Service Catalogue Layer**:
+  - **DTOs** (`backend/src/main/java/com/licensing/platform/dto/`):
+    - `DepartmentResponse`, `DepartmentRequest`: Department metadata and associated service counts.
+    - `ServiceSummaryResponse`, `ServiceDetailResponse`: Overview and deep schema representation.
+    - `ServiceCreateRequest`, `ServiceUpdateRequest`: Full service creation and updates.
+    - `ServiceFieldResponse`, `ServiceFieldRequest`: Dynamic form fields with validation rules and bilingual labels.
+    - `RequiredDocumentTypeResponse`, `RequiredDocumentTypeRequest`: Document checklist with MIME types and size caps.
+  - **Service** (`backend/src/main/java/com/licensing/platform/service/ServiceCatalogueService.java`):
+    - Department querying, creation, and updating.
+    - Full-text service search and department filtering.
+    - Dynamic form field lifecycle: Add, update, delete, with display order management.
+    - Required document lifecycle: Add, update, delete, with MIME and size constraints.
+    - Soft deactivation of services.
+  - **Controllers** (`backend/src/main/java/com/licensing/platform/controller/`):
+    - `DepartmentController`: `GET /api/departments`, `GET /api/departments/{id}`, `POST /api/departments` (ADMIN), `PUT /api/departments/{id}` (ADMIN).
+    - `ServiceCatalogueController`:
+      - Public: `GET /api/services` (supports `departmentId`, `query`, `activeOnly`), `GET /api/services/{id}`, `GET /api/services/code/{code}`.
+      - Admin: `POST /api/services`, `PUT /api/services/{id}`, `DELETE /api/services/{id}`, `POST /api/services/{id}/fields`, `PUT /api/services/{id}/fields/{fieldId}`, `DELETE /api/services/{id}/fields/{fieldId}`, `POST /api/services/{id}/documents`, `PUT /api/services/{id}/documents/{docId}`, `DELETE /api/services/{id}/documents/{docId}`.
+  - **Security Configuration** (`SecurityConfig.java`):
+    - Public read access for `GET /api/departments/**` and `GET /api/services/**`.
+    - Strict `@PreAuthorize("hasRole('ADMIN')")` on all create/update/delete mutations.
+  - **Data Initialization** (`DataInitializer.java`):
+    - Seeds default administrator account (`admin@licensing.gov.in` / `Admin@123`) on production/dev startup, disabled during tests (`@Profile("!test")`).
+
+- **Frontend Service Catalogue**:
+  - `frontend/src/types/service.ts`: TypeScript interfaces for `Department`, `ServiceSummary`, `ServiceDetail`, `ServiceField`, `RequiredDocumentType`.
+  - `frontend/src/services/serviceCatalogueApi.ts`: Type-safe fetch client for departments and services.
+  - `frontend/src/components/ServiceCatalogue.tsx`: Interactive catalogue with department filter pills, search bar, language switcher (English / Telugu), service cards, and modal showing dynamic form fields and required document checklists.
+  - `frontend/src/App.tsx`: Tabbed navigation switching between "Service Catalogue" and "System Health".
+  - Verified with `npm run build`: Zero errors, production bundle in `frontend/dist/`.
 
 ### 2. Automated Test Execution Evidence
-- Command: `backend/mvnw.cmd clean test`
+- Command: `backend/mvnw.cmd test`
 - Results:
   ```
   [INFO] Running com.licensing.platform.AuthenticationAndAuthorizationTest
@@ -76,29 +72,39 @@
   [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.DatabaseMigrationAndPersistenceTest
   [INFO] Running com.licensing.platform.HealthControllerTest
   [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.HealthControllerTest
+  [INFO] Running com.licensing.platform.ServiceCatalogueTest
+  [INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.ServiceCatalogueTest
+  [INFO] 
   [INFO] Results:
-  [INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] 
+  [INFO] Tests run: 37, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] 
+  [INFO] ------------------------------------------------------------------------
   [INFO] BUILD SUCCESS
-  [INFO] Total time: 01:25 min
+  [INFO] ------------------------------------------------------------------------
+  [INFO] Total time: 40.105 s
   ```
-- Detailed Test Verifications:
-  1. `testCitizenRegistrationSuccess`: Verifies 201 Created, citizen role assigned, BCrypt password hash stored, and JWT returned.
-  2. `testRegistrationDuplicateEmailReturns409`: Verifies 409 Conflict when attempting to register with an existing email.
-  3. `testRegistrationValidationErrorsReturns400`: Verifies 400 Bad Request with field validation errors for blank name, invalid email, and short password.
-  4. `testRegistrationIgnoresRoleEscalationAttempt`: Verifies that passing `role: "ADMIN"` or `role: "OFFICER"` during registration is neutralized and user is forced to `CITIZEN`.
-  5. `testLoginSuccess`: Verifies 200 OK and valid JWT returned upon correct credentials.
-  6. `testLoginWrongPasswordReturns401`: Verifies 401 Unauthorized on invalid password without leaking user existence.
-  7. `testLoginNonExistentEmailReturns401`: Verifies 401 Unauthorized for unknown emails without user enumeration.
-  8. `testGetMeWithValidToken`: Verifies 200 OK and correct user profile returned for valid Bearer token.
-  9. `testGetMeWithoutTokenReturns401`: Verifies 401 Unauthorized JSON error response when `Authorization` header is missing.
-  10. `testGetMeWithInvalidTokenReturns401`: Verifies 401 Unauthorized when Bearer token signature is tampered with or malformed.
-  11. `testLogoutSuccess`: Verifies 200 OK and audit log entry created.
-  12. `testCitizenCanAccessOwnApplication`: Verifies 200 OK when citizen accesses an application they own.
-  13. `testCitizenCannotAccessOtherCitizenApplicationReturns403`: Verifies 403 Forbidden (IDOR defense) when citizen attempts to access another user's application.
-  14. `testOfficerCanAccessApplicationInAssignedDepartment`: Verifies 200 OK when officer accesses an application in their assigned department.
-  15. `testOfficerCannotAccessApplicationInUnassignedDepartmentReturns403`: Verifies 403 Forbidden when officer attempts to access an application outside their assigned department.
+- Detailed Phase 4 Verifications:
+  1. `testGetAllDepartmentsPublic`: Verified public can list departments with live service counts.
+  2. `testGetDepartmentById`: Verified department retrieval by ID.
+  3. `testGetDepartmentNotFoundReturns404`: Verified 404 for unknown department ID.
+  4. `testGetAllServicesPublic`: Verified public can list all active services with summary metrics.
+  5. `testFilterServicesByDepartment`: Verified filtering services by department.
+  6. `testSearchServicesByQuery`: Verified search by keyword across service title and description.
+  7. `testGetServiceByIdWithFieldsAndDocuments`: Verified retrieval of complete dynamic form schema with ordered fields and required document checklist.
+  8. `testGetServiceByCode`: Verified retrieval by unique business code (`SRV_TRADE_LICENSE`).
+  9. `testGetServiceNotFoundReturns404`: Verified 404 for unknown service ID.
+  10. `testCreateServiceWithoutAuthReturns401`: Verified unauthenticated creation attempt returns 401.
+  11. `testCreateServiceAsCitizenReturns403`: Verified citizen creation attempt returns 403 Forbidden.
+  12. `testCreateServiceAsAdminSuccess`: Verified admin creates custom service with dynamic fields and document rules.
+  13. `testCreateServiceDuplicateCodeReturns409`: Verified duplicate service code rejection with 409 Conflict.
+  14. `testUpdateServiceAsAdmin`: Verified admin updating service properties, fee, and timeline.
+  15. `testManageDynamicFieldsAsAdmin`: Verified admin adding, updating, and deleting dynamic fields on an existing service.
+  16. `testManageRequiredDocumentsAsAdmin`: Verified admin adding and deleting required document rules.
+  17. `testDeactivateServiceAsAdmin`: Verified soft deactivation hides service from public listings while retaining administrative records.
+  18. `testCreateDepartmentAsAdmin`: Verified admin creating a new department.
 
 ---
 
 ## Next Action
-Wait for user review and explicit approval ("ok") of Phase 3 before starting Phase 4 (Configurable Service Catalogue).
+Wait for user review and explicit approval ("ok") of Phase 4 before starting Phase 5 (Application Workflow and Lifecycle State Machine).
