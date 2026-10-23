@@ -210,7 +210,7 @@ export const OfficerDashboard: React.FC = () => {
             disabled={loading}
             className="inline-flex items-center px-3 py-2 border border-slate-200 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin text-indigo-600' : 'text-slate-400'}`} />
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin text-[#2563EB]' : 'text-slate-400'}`} />
             Refresh Queue
           </button>
         </div>
@@ -221,7 +221,7 @@ export const OfficerDashboard: React.FC = () => {
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-500">Pending Review</span>
-            <Clock className="w-5 h-5 text-blue-500" />
+            <Clock className="w-5 h-5 text-[#2563EB]" />
           </div>
           <p className="text-2xl font-bold text-slate-900 mt-2">{pendingCount}</p>
         </div>
@@ -257,7 +257,7 @@ export const OfficerDashboard: React.FC = () => {
             placeholder="Search by reference #, citizen name, or service..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB]"
           />
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
@@ -265,7 +265,7 @@ export const OfficerDashboard: React.FC = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white text-slate-700 focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB]"
           >
             <option value="ALL">All Statuses</option>
             <option value="SUBMITTED">Pending Review (Submitted)</option>
@@ -348,16 +348,16 @@ export const OfficerDashboard: React.FC = () => {
       {/* Dossier Inspection Modal / Slide-over */}
       {selectedAppId && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-slate-900 bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="officer-dossier-title"
         >
-          <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+          <div className="bg-white sm:rounded-2xl shadow-xl max-w-4xl w-full h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-indigo-600" />
+                <FileText className="w-5 h-5 text-[#2563EB]" />
                 <div>
                   <h3 id="officer-dossier-title" className="text-lg font-bold text-slate-900">
                     Application Dossier: {dossier?.referenceNumber || `ID #${selectedAppId}`}
@@ -550,7 +550,7 @@ export const OfficerDashboard: React.FC = () => {
                   {dossier.status === 'SUBMITTED' && (
                     <button
                       onClick={() => handleStartReview(dossier.id)}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm inline-flex items-center gap-1.5"
+                      className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-sm font-bold shadow-sm inline-flex items-center gap-1.5"
                     >
                       <UserCheck className="w-4 h-4" /> Move to Verification
                     </button>

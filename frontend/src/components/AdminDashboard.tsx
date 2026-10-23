@@ -286,14 +286,14 @@ export const AdminDashboard: React.FC = () => {
       )}
 
       {/* Navigation Tabs */}
-      <div className="border-b border-slate-200">
-        <nav className="flex space-x-8">
+      <div className="border-b border-slate-200 overflow-x-auto scrollbar-none">
+        <nav className="flex space-x-6 min-w-max pb-px">
           <button
             onClick={() => setActiveTab('applications')}
-            className={`py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
               activeTab === 'applications'
-                ? 'border-indigo-600 text-indigo-600 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
             }`}
           >
             <FileText className="w-4 h-4" /> Applications Oversight
@@ -301,10 +301,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('catalogue')}
-            className={`py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
               activeTab === 'catalogue'
-                ? 'border-indigo-600 text-indigo-600 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
             }`}
           >
             <Layers className="w-4 h-4" /> Service Catalogue
@@ -312,10 +312,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('audit')}
-            className={`py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
               activeTab === 'audit'
-                ? 'border-indigo-600 text-indigo-600 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
             }`}
           >
             <History className="w-4 h-4" /> System Audit Trail
@@ -323,10 +323,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
               activeTab === 'analytics'
-                ? 'border-indigo-600 text-indigo-600 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
             }`}
           >
             <TrendingUp className="w-4 h-4" /> Status Breakdown
@@ -334,10 +334,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('benchmark')}
-            className={`py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 ${
+            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
               activeTab === 'benchmark'
-                ? 'border-indigo-600 text-indigo-600 font-semibold'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                ? 'border-[#2563EB] text-[#2563EB]'
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
             }`}
           >
             <FlaskConical className="w-4 h-4" /> Research & Benchmarks

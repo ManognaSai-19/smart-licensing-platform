@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { PrescreeningSummary, FindingOutcome } from '../types/prescreening';
 import { prescreeningApi } from '../services/prescreeningApi';
+import {
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Search,
+  RefreshCw,
+  Eye,
+  FileText,
+  ShieldCheck,
+} from 'lucide-react';
 
 interface PrescreeningFindingsViewProps {
   applicationId: number;
@@ -27,7 +38,6 @@ export const PrescreeningFindingsView: React.FC<PrescreeningFindingsViewProps> =
       const data = await prescreeningApi.getSummary(applicationId);
       setSummary(data);
     } catch (err: any) {
-      // Summary may be empty if not run yet
       setSummary(null);
     } finally {
       setLoading(false);
@@ -58,62 +68,81 @@ export const PrescreeningFindingsView: React.FC<PrescreeningFindingsViewProps> =
     switch (status) {
       case 'PASSED':
         return {
-          bg: '#d1fae5',
-          color: '#065f46',
-          text: language === 'te' ? '✓ పూర్వ-పరిశీలన ఆమోదించబడింది' : '✓ Pre-Screening Cleared (Ready for Submission)',
+          bg: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+          text: language === 'te' ? '✓ పూర్వ-పరిశీలన ఆమోదించబడింది (సమర్పణకు సిద్ధం)' : '✓ Pre-Screening Cleared (Ready for Submission)',
+          icon: CheckCircle2,
         };
       case 'NEEDS_MANUAL_REVIEW':
         return {
-          bg: '#ede9fe',
-          color: '#5b21b6',
+          bg: 'bg-indigo-50 border-indigo-200 text-indigo-800',
           text: language === 'te' ? '🔍 అధికారి మాన్యువల్ పరిశీలనకు నిర్దేశించబడింది (జరిమానా లేదు)' : '🔍 Routed for Officer Manual Inspection (No Penalty)',
+          icon: Search,
         };
       case 'HAS_WARNINGS':
         return {
-          bg: '#fef3c7',
-          color: '#92400e',
-          text: language === 'te' ? '⚠️ చిన్నపాటి వ్యత్యాసాలు గమనించబడ్డాయి' : '⚠️ Minor Variations Noted (Review Suggested)',
+          bg: 'bg-amber-50 border-amber-200 text-amber-800',
+          text: language === 'te' ? '⚠️ చిన్నపాటి వ్యత్యాసాలు గమనించబడ్డాయి (సమీక్ష సిఫార్సు)' : '⚠️ Minor Variations Noted (Review Suggested)',
+          icon: AlertTriangle,
         };
       case 'HAS_FAILS':
       default:
         return {
-          bg: '#fee2e2',
-          color: '#991b1b',
-          text: language === 'te' ? '❌ దిద్దుబాటు అవసరమైన లోపాలు ఉన్నాయి' : '❌ Critical Discrepancies Detected',
+          bg: 'bg-rose-50 border-rose-200 text-rose-800',
+          text: language === 'te' ? '❌ దిద్దుబాటు అవసరమైన లోపాలు ఉన్నాయి' : '❌ Critical Discrepancies Detected (Fix Required)',
+          icon: AlertCircle,
         };
     }
   };
 
-  const getOutcomeStyle = (outcome: FindingOutcome) => {
+  const getOutcomeBadge = (outcome: FindingOutcome) => {
     switch (outcome) {
       case 'PASS':
-        return { bg: '#d1fae5', color: '#065f46', label: 'PASS' };
+        return {
+          cls: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+          label: language === 'te' ? 'ఆమోదం' : 'PASS',
+        };
       case 'WARNING':
-        return { bg: '#fef3c7', color: '#92400e', label: 'WARNING' };
+        return {
+          cls: 'bg-amber-50 text-amber-800 border-amber-200',
+          label: language === 'te' ? 'హెచ్చరిక' : 'WARNING',
+        };
       case 'NEEDS_MANUAL_REVIEW':
-        return { bg: '#ede9fe', color: '#5b21b6', label: 'OFFICER REVIEW' };
+        return {
+          cls: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+          label: language === 'te' ? 'అధికారి సమీక్ష' : 'OFFICER REVIEW',
+        };
       case 'FAIL':
       default:
-        return { bg: '#fee2e2', color: '#991b1b', label: 'ACTION NEEDED' };
+        return {
+          cls: 'bg-rose-50 text-rose-800 border-rose-200',
+          label: language === 'te' ? 'చర్య అవసరం' : 'ACTION NEEDED',
+        };
     }
   };
 
-  const filteredFindings = summary?.findings.filter((f) => {
-    if (activeTab === 'ALL') return true;
-    return f.outcome === activeTab;
-  }) || [];
+  const filteredFindings =
+    summary?.findings.filter((f) => {
+      if (activeTab === 'ALL') return true;
+      return f.outcome === activeTab;
+    }) || [];
 
   return (
-    <div style={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '1.5rem', margin: '1rem 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+    <div className="w-full space-y-5 animate-in fade-in">
+      {/* HEADER SECTION */}
+      <div className="bg-[#F8FAFC] border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>
-            {language === 'te' ? 'వివరణాత్మక AI పూర్వ-పరిశీలన డాష్‌బోర్డ్' : 'Explainable AI Pre-Screening Findings'}
+          <h3 className="text-base font-extrabold text-[#101828] flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#2563EB]" />
+            <span>
+              {language === 'te'
+                ? 'వివరణాత్మక AI పూర్వ-పరిశీలన ఫలితాలు'
+                : 'Explainable AI Pre-Screening Findings'}
+            </span>
           </h3>
-          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#4b5563' }}>
+          <p className="text-xs text-slate-500 mt-0.5">
             {language === 'te'
-              ? 'దరఖాస్తు ఫారమ్ వివరాలు మరియు అప్‌లోడ్ చేసిన పత్రాల మధ్య స్వయంచాలక నిబంధనల సరిపోలిక'
-              : 'Automated explainable verification cross-referencing application data and uploaded document OCR'}
+              ? 'ఫారమ్ వివరాలు మరియు అప్‌లోడ్ చేసిన పత్రాల మధ్య స్వయంచాలక నిబంధనల సరిపోలిక'
+              : 'Cross-verifies application form fields against document OCR to prevent avoidable rejections'}
           </p>
         </div>
 
@@ -121,113 +150,148 @@ export const PrescreeningFindingsView: React.FC<PrescreeningFindingsViewProps> =
           type="button"
           disabled={running}
           onClick={handleRunPrescreening}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            background: running ? '#9ca3af' : '#2563eb',
-            color: '#ffffff',
-            border: 'none',
-            fontWeight: 600,
-            fontSize: '0.875rem',
-            cursor: running ? 'not-allowed' : 'pointer',
-          }}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 self-start sm:self-auto ${
+            running
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-xs'
+          }`}
         >
-          {running
-            ? language === 'te' ? 'పరిశీలిస్తోంది...' : 'Running Pre-Screening...'
-            : language === 'te' ? 'పూర్వ-పరిశీలన ప్రారంభించు' : 'Run Pre-Screening'}
+          {running ? (
+            <>
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span>{language === 'te' ? 'పరిశీలిస్తోంది...' : 'Running Verification...'}</span>
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="w-4 h-4" />
+              <span>
+                {summary
+                  ? language === 'te'
+                    ? 'మళ్ళీ సరిచూడు'
+                    : 'Re-Run Pre-Screening'
+                  : language === 'te'
+                  ? 'పూర్వ-పరిశీలన ప్రారంభించు'
+                  : 'Run Pre-Screening'}
+              </span>
+            </>
+          )}
         </button>
       </div>
 
+      {/* ERROR FEEDBACK */}
       {errorMsg && (
-        <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '6px', background: '#fee2e2', color: '#991b1b', fontSize: '0.875rem' }}>
-          ⚠️ {errorMsg}
+        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+          <span>{errorMsg}</span>
         </div>
       )}
 
+      {/* LOADING STATE */}
       {loading && !summary && (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-          {language === 'te' ? 'పూర్వ-పరిశీలన ఫలితాలు లోడ్ అవుతున్నాయి...' : 'Loading pre-screening status...'}
-        </div>
-      )}
-
-      {!loading && !summary && (
-        <div style={{ padding: '2rem', textAlign: 'center', background: '#f9fafb', borderRadius: '6px', border: '1px dashed #d1d5db' }}>
-          <p style={{ margin: 0, color: '#4b5563', fontSize: '0.95rem' }}>
-            {language === 'te'
-              ? 'ఈ దరఖాస్తుకు ఇంకా పూర్వ-పరిశీలన నిర్వహించబడలేదు. ప్రారంభించడానికి పైన ఉన్న బటన్‌ను క్లిక్ చేయండి.'
-              : 'Pre-screening has not been executed yet for this application. Click "Run Pre-Screening" above to evaluate form data and supporting documents.'}
+        <div className="p-10 text-center bg-white rounded-2xl border border-slate-200">
+          <div className="w-8 h-8 border-3 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-xs font-medium text-slate-500">
+            {language === 'te' ? 'పూర్వ-పరిశీలన ఫలితాలు లోడ్ అవుతున్నాయి...' : 'Loading verification findings...'}
           </p>
         </div>
       )}
 
+      {/* EMPTY STATE */}
+      {!loading && !summary && (
+        <div className="p-8 text-center bg-[#F8FAFC] rounded-2xl border border-dashed border-slate-300 space-y-3">
+          <ShieldCheck className="w-10 h-10 text-slate-400 mx-auto" />
+          <div>
+            <h4 className="text-sm font-bold text-[#101828]">Pre-Screening Not Run Yet</h4>
+            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+              Click "Run Pre-Screening" above to automatically inspect uploaded documents and compare names, dates of birth, and identity numbers against your form entry.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRunPrescreening}
+            className="px-4 py-2 bg-[#2563EB] text-white text-xs font-bold rounded-xl hover:bg-[#1D4ED8] transition shadow-xs"
+          >
+            Run Pre-Screening Now
+          </button>
+        </div>
+      )}
+
+      {/* PRE-SCREENING RESULTS */}
       {summary && (
-        <div>
+        <div className="space-y-4">
           {/* Status Banner */}
           {(() => {
             const badge = getStatusBadge(summary.overallStatus);
+            const Icon = badge.icon;
             return (
               <div
-                style={{
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: '6px',
-                  background: badge.bg,
-                  color: badge.color,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
+                className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${badge.bg}`}
               >
-                <span>{badge.text}</span>
-                <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>
+                <div className="flex items-center gap-2.5">
+                  <Icon className="w-5 h-5 shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold">{badge.text}</span>
+                </div>
+                <span className="text-xs font-mono font-bold bg-white/60 px-3 py-1 rounded-xl self-start sm:self-auto border border-current/20">
                   Avg. OCR Confidence: {(summary.averageConfidence * 100).toFixed(1)}%
                 </span>
               </div>
             );
           })()}
 
-          {/* Metrics Overview Row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.25rem' }}>
-            <div style={{ padding: '0.75rem', borderRadius: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#166534' }}>{summary.passCount}</div>
-              <div style={{ fontSize: '0.75rem', color: '#15803d' }}>{language === 'te' ? 'ఆమోదించబడినవి' : 'Passed Checks'}</div>
+          {/* Metrics Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-center">
+              <div className="text-xl font-extrabold text-[#15803D]">{summary.passCount}</div>
+              <div className="text-[11px] font-bold text-emerald-800 mt-0.5">
+                {language === 'te' ? 'ఆమోదించినవి' : 'Passed Checks'}
+              </div>
             </div>
-            <div style={{ padding: '0.75rem', borderRadius: '6px', background: '#fef3c7', border: '1px solid #fde68a', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#92400e' }}>{summary.warningCount}</div>
-              <div style={{ fontSize: '0.75rem', color: '#b45309' }}>{language === 'te' ? 'హెచ్చరికలు' : 'Warnings'}</div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-center">
+              <div className="text-xl font-extrabold text-[#B45309]">{summary.warningCount}</div>
+              <div className="text-[11px] font-bold text-amber-800 mt-0.5">
+                {language === 'te' ? 'హెచ్చరికలు' : 'Advisory Warnings'}
+              </div>
             </div>
-            <div style={{ padding: '0.75rem', borderRadius: '6px', background: '#fee2e2', border: '1px solid #fecaca', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#991b1b' }}>{summary.failCount}</div>
-              <div style={{ fontSize: '0.75rem', color: '#b91c1c' }}>{language === 'te' ? 'దిద్దుబాట్లు' : 'Action Needed'}</div>
+
+            <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-200 text-center">
+              <div className="text-xl font-extrabold text-rose-700">{summary.failCount}</div>
+              <div className="text-[11px] font-bold text-rose-800 mt-0.5">
+                {language === 'te' ? 'దిద్దుబాట్లు' : 'Action Needed'}
+              </div>
             </div>
-            <div style={{ padding: '0.75rem', borderRadius: '6px', background: '#ede9fe', border: '1px solid #ddd6fe', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#5b21b6' }}>{summary.manualReviewCount}</div>
-              <div style={{ fontSize: '0.75rem', color: '#6d28d9' }}>{language === 'te' ? 'మాన్యువల్ సమీక్ష' : 'Officer Review'}</div>
+
+            <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200 text-center">
+              <div className="text-xl font-extrabold text-indigo-700">{summary.manualReviewCount}</div>
+              <div className="text-[11px] font-bold text-indigo-800 mt-0.5">
+                {language === 'te' ? 'అధికారి సమీక్ష' : 'Officer Review'}
+              </div>
             </div>
           </div>
 
-          {/* Filter Tabs & OCR Inspector Toggle */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', marginBottom: '1rem', paddingBottom: '0.5rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {(['ALL', 'FAIL', 'WARNING', 'NEEDS_MANUAL_REVIEW', 'PASS'] as const).map((tab) => (
+          {/* Filter Pills & OCR Inspector Toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+              {(
+                [
+                  { key: 'ALL', labelEn: 'All Checks', labelTe: 'అన్నీ' },
+                  { key: 'FAIL', labelEn: 'Action Needed', labelTe: 'లోపాలు' },
+                  { key: 'WARNING', labelEn: 'Warnings', labelTe: 'హెచ్చరికలు' },
+                  { key: 'NEEDS_MANUAL_REVIEW', labelEn: 'Officer Review', labelTe: 'మాన్యువల్' },
+                  { key: 'PASS', labelEn: 'Passed', labelTe: 'ఆమోదం' },
+                ] as const
+              ).map((tab) => (
                 <button
-                  key={tab}
+                  key={tab.key}
                   type="button"
-                  onClick={() => setActiveTab(tab)}
-                  style={{
-                    padding: '0.35rem 0.75rem',
-                    borderRadius: '4px',
-                    border: 'none',
-                    background: activeTab === tab ? '#2563eb' : '#f3f4f6',
-                    color: activeTab === tab ? '#ffffff' : '#4b5563',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
+                    activeTab === tab.key
+                      ? 'bg-[#101828] text-white shadow-xs'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
                 >
-                  {tab === 'ALL' ? (language === 'te' ? 'అన్నీ' : 'All') : tab}
+                  {language === 'te' ? tab.labelTe : tab.labelEn}
                 </button>
               ))}
             </div>
@@ -236,39 +300,37 @@ export const PrescreeningFindingsView: React.FC<PrescreeningFindingsViewProps> =
               <button
                 type="button"
                 onClick={() => setShowOcrInspector(!showOcrInspector)}
-                style={{
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  background: '#ffffff',
-                  fontSize: '0.75rem',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-300 hover:bg-slate-100 text-slate-700 transition flex items-center gap-1.5 self-start sm:self-auto"
               >
-                {showOcrInspector ? 'Hide OCR Extractions' : 'Inspect OCR Extractions'}
+                <Eye className="w-3.5 h-3.5 text-slate-500" />
+                <span>{showOcrInspector ? 'Hide OCR Inspector' : 'Inspect OCR Entities'}</span>
               </button>
             )}
           </div>
 
-          {/* OCR Inspector Details Drawer */}
+          {/* OCR Entities Inspector Drawer */}
           {showOcrInspector && summary.extractions && (
-            <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '1rem', marginBottom: '1.25rem' }}>
-              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#1e293b' }}>
-                Extracted Document OCR Entities ({summary.extractions.length} documents)
+            <div className="bg-[#F8FAFC] border border-slate-200 rounded-2xl p-4 space-y-3 animate-in fade-in">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#101828] flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#2563EB]" />
+                <span>Extracted Document Entities ({summary.extractions.length})</span>
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {summary.extractions.map((ext) => (
-                  <div key={ext.id} style={{ background: '#ffffff', padding: '0.75rem', borderRadius: '4px', border: '1px solid #e2e8f0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>📄 {ext.documentName}</span>
-                      <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                        Engine: {ext.engineName} v{ext.engineVersion} • Confidence: {(ext.confidenceScore * 100).toFixed(1)}%
-                      </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {summary.extractions.map((ext, idx) => (
+                  <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+                    <div className="font-bold text-[#101828]">{ext.documentName || 'Document'}</div>
+                    <div className="text-slate-500 text-[11px]">
+                      Engine: <span className="font-mono text-slate-700">{ext.engineName}</span>
                     </div>
-                    <pre style={{ margin: 0, background: '#f1f5f9', padding: '0.5rem', borderRadius: '4px', fontSize: '0.75rem', overflowX: 'auto' }}>
-                      {JSON.stringify(ext.extractedFields, null, 2)}
-                    </pre>
+                    <div className="text-slate-500 text-[11px]">
+                      Confidence: <span className="font-mono font-bold text-[#2563EB]">{(ext.confidenceScore * 100).toFixed(0)}%</span>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-slate-100">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">Raw OCR Extract:</span>
+                      <p className="text-[11px] text-slate-600 line-clamp-2 italic font-mono bg-slate-50 p-1.5 rounded mt-1">
+                        {ext.rawText || 'No text extracted'}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -276,90 +338,76 @@ export const PrescreeningFindingsView: React.FC<PrescreeningFindingsViewProps> =
           )}
 
           {/* Findings List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {filteredFindings.map((finding) => {
-              const badge = getOutcomeStyle(finding.outcome);
+          <div className="space-y-3">
+            {filteredFindings.length === 0 ? (
+              <div className="p-6 text-center bg-white rounded-2xl border border-slate-200 text-xs text-slate-500">
+                No rule findings match this filter.
+              </div>
+            ) : (
+              filteredFindings.map((finding) => {
+                const outcomeBadge = getOutcomeBadge(finding.outcome);
 
-              return (
-                <div
-                  key={finding.id}
-                  style={{
-                    padding: '1rem',
-                    borderRadius: '6px',
-                    border: '1px solid #e5e7eb',
-                    background: '#ffffff',
-                    borderLeft: `4px solid ${badge.color}`,
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                return (
+                  <div
+                    key={finding.id}
+                    className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2 hover:border-slate-300 transition"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-[#101828]">
+                          {finding.documentName || finding.fieldKey || 'Rule Check'}
+                        </span>
+                        <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                          {finding.ruleCode}
+                        </span>
+                      </div>
                       <span
-                        style={{
-                          padding: '0.15rem 0.5rem',
-                          borderRadius: '4px',
-                          background: badge.bg,
-                          color: badge.color,
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                        }}
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border self-start sm:self-auto ${outcomeBadge.cls}`}
                       >
-                        {badge.label}
+                        {outcomeBadge.label}
                       </span>
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#1f2937' }}>
-                        {finding.ruleCode}
-                      </span>
-                      {finding.fieldKey && (
-                        <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>• Field: {finding.fieldKey}</span>
-                      )}
                     </div>
-                    {finding.confidence && (
-                      <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
-                        Confidence: {(finding.confidence * 100).toFixed(0)}%
-                      </span>
+
+                    {/* Compare Values Row */}
+                    {(finding.expectedValue || finding.extractedValue) && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 bg-[#F8FAFC] rounded-xl border border-slate-100 text-xs">
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                            Entered in Form:
+                          </span>
+                          <span className="font-mono font-bold text-[#101828]">
+                            {finding.expectedValue || '(blank)'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                            Extracted from Document:
+                          </span>
+                          <span className="font-mono font-bold text-[#2563EB]">
+                            {finding.extractedValue || '(none)'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Explanation */}
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {finding.explanation}
+                    </p>
+
+                    {/* Advice / Fix Recommendation */}
+                    {finding.suggestedAction && (
+                      <div className="p-2.5 bg-amber-50/60 border border-amber-200/80 rounded-xl text-xs text-[#B45309] flex items-start gap-2">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <span>
+                          <strong>Recommended action:</strong> {finding.suggestedAction}
+                        </span>
+                      </div>
                     )}
                   </div>
-
-                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#374151' }}>
-                    {finding.explanation}
-                  </p>
-
-                  {/* Value Comparison Diff */}
-                  {(finding.expectedValue || finding.extractedValue) && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: '1rem',
-                        background: '#f9fafb',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '4px',
-                        marginBottom: '0.5rem',
-                        fontSize: '0.8rem',
-                      }}
-                    >
-                      {finding.expectedValue && (
-                        <div>
-                          <strong style={{ color: '#4b5563' }}>Expected / Form: </strong>
-                          <span style={{ color: '#111827' }}>{finding.expectedValue}</span>
-                        </div>
-                      )}
-                      {finding.extractedValue && (
-                        <div>
-                          <strong style={{ color: '#4b5563' }}>Extracted / Document: </strong>
-                          <span style={{ color: '#111827' }}>{finding.extractedValue}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {finding.suggestedAction && finding.outcome !== 'PASS' && (
-                    <div style={{ fontSize: '0.8rem', color: '#1d4ed8', background: '#eff6ff', padding: '0.4rem 0.75rem', borderRadius: '4px' }}>
-                      💡 <strong>{language === 'te' ? 'సూచించిన చర్య: ' : 'Suggested Action: '}</strong>
-                      {finding.suggestedAction}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       )}

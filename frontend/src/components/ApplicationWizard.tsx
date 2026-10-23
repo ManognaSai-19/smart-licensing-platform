@@ -74,6 +74,12 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   }, []);
 
   useEffect(() => {
+    if (initialServiceId && !existingApplication && !application) {
+      handleStartApplication(initialServiceId);
+    }
+  }, [initialServiceId]);
+
+  useEffect(() => {
     if (selectedServiceId) {
       setLoading(true);
       fetchServiceById(selectedServiceId)
@@ -178,12 +184,12 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="wizard-title"
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95">
+      <div className="bg-white sm:rounded-2xl shadow-2xl max-w-5xl w-full h-full sm:h-auto sm:max-h-[94vh] flex flex-col overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95">
         {/* Wizard Header */}
         <div className="bg-[#101828] text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -614,15 +620,15 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               </div>
 
               {/* Citizen Legal Declaration */}
-              <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl space-y-2">
+              <div className="p-4 bg-[#EAF2FF] border border-[#cfe0fc] rounded-2xl space-y-2">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={declarationAccepted}
                     onChange={(e) => setDeclarationAccepted(e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 mt-0.5 rounded focus:ring-indigo-500"
+                    className="w-4 h-4 text-[#2563EB] mt-0.5 rounded focus:ring-[#2563EB]"
                   />
-                  <span className="text-xs text-indigo-950 font-medium leading-relaxed">
+                  <span className="text-xs text-[#101828] font-medium leading-relaxed">
                     I solemnly declare that the information and documents provided in this application are genuine, correct, and complete to the best of my knowledge. I understand that false statements or forged documentation may lead to legal penalties and permanent revocation.
                   </span>
                 </label>
@@ -633,20 +639,20 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           {/* SUCCESS MODAL ON SUBMIT */}
           {successApp && (
             <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center space-y-4 animate-in zoom-in-95">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+              <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 text-center space-y-4 animate-in zoom-in-95">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-[#15803D] flex items-center justify-center mx-auto shadow-xs border border-emerald-200">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Application Submitted!</h3>
+                  <h3 className="text-xl font-black text-[#101828]">Application Submitted!</h3>
                   <p className="text-xs text-slate-500 mt-1">
                     Your application has been routed to the departmental verification queue for review by authorized officers.
                   </p>
                 </div>
 
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                <div className="p-4 bg-[#F8FAFC] border border-slate-200 rounded-2xl space-y-1">
                   <span className="text-xs text-slate-400 uppercase font-semibold">Reference Number</span>
-                  <p className="text-lg font-mono font-bold text-indigo-700">
+                  <p className="text-lg font-mono font-black text-[#2563EB]">
                     {successApp.referenceNumber}
                   </p>
                 </div>
@@ -654,7 +660,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow transition-colors"
+                  className="w-full py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl text-xs shadow transition"
                 >
                   Return to Dashboard
                 </button>

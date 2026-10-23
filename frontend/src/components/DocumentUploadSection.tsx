@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DocumentChecklistStatus } from '../types/document';
 import { documentApi } from '../services/documentApi';
+import {
+  UploadCloud,
+  CheckCircle2,
+  Trash2,
+  ExternalLink,
+  AlertCircle,
+  FileCheck,
+  RefreshCw,
+} from 'lucide-react';
 
 interface DocumentUploadSectionProps {
   applicationId: number;
@@ -52,11 +61,13 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
       setSuccessMsg(null);
 
       await documentApi.uploadDocument(applicationId, typeId, file);
-      setSuccessMsg(language === 'te' ? 'పత్రం విజయవంతంగా అప్‌లోడ్ చేయబడింది' : 'Document uploaded successfully');
+      setSuccessMsg(
+        language === 'te' ? 'పత్రం విజయవంతంగా అప్‌లోడ్ చేయబడింది' : 'Document uploaded successfully'
+      );
       await fetchChecklist();
       if (onUploadSuccess) onUploadSuccess();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Upload failed');
+      setErrorMsg(err.message || 'Upload failed. Please ensure file meets format criteria.');
     } finally {
       setUploadingTypeId(null);
       if (fileInputRefs.current[typeId]) {
@@ -66,7 +77,11 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
   };
 
   const handleDelete = async (docId: number) => {
-    if (!window.confirm(language === 'te' ? 'ఈ పత్రాన్ని తొలగించాలనుకుంటున్నారా?' : 'Delete this document?')) {
+    if (
+      !window.confirm(
+        language === 'te' ? 'ఈ పత్రాన్ని తొలగించాలనుకుంటున్నారా?' : 'Delete this document?'
+      )
+    ) {
       return;
     }
 
@@ -74,7 +89,7 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
       setErrorMsg(null);
       setSuccessMsg(null);
       await documentApi.deleteDocument(applicationId, docId);
-      setSuccessMsg(language === 'te' ? 'పత్రం తొలగించబడింది' : 'Document deleted successfully');
+      setSuccessMsg(language === 'te' ? 'పత్రం తొలగించబడింది' : 'Document removed successfully');
       await fetchChecklist();
       if (onUploadSuccess) onUploadSuccess();
     } catch (err: any) {
@@ -85,230 +100,208 @@ export const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
   const mandatoryCount = checklist.filter((item) => item.required).length;
   const mandatoryUploadedCount = checklist.filter((item) => item.required && item.uploaded).length;
   const isComplete = mandatoryCount > 0 && mandatoryUploadedCount === mandatoryCount;
+  const progressPercent = mandatoryCount > 0 ? Math.round((mandatoryUploadedCount / mandatoryCount) * 100) : 0;
 
   if (loading) {
     return (
-      <div style={{ padding: '1.5rem', textAlign: 'center', color: '#6b7280' }}>
-        {language === 'te' ? 'పత్రాల జాబితా లోడ్ అవుతోంది...' : 'Loading document checklist...'}
+      <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
+        <div className="w-8 h-8 border-3 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-sm font-medium text-slate-500">
+          {language === 'te' ? 'పత్రాల జాబితా లోడ్ అవుతోంది...' : 'Loading document requirements...'}
+        </p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e5e7eb', padding: '1.5rem', margin: '1rem 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <div>
-          <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#111827' }}>
-            {language === 'te' ? 'సహాయక పత్రాల అప్‌లోడ్' : 'Supporting Documents Checklist'}
-          </h3>
-          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.875rem', color: '#4b5563' }}>
-            {language === 'te'
-              ? 'ధృవీకరణ కోసం అవసరమైన పత్రాలను సురక్షితంగా అప్‌లోడ్ చేయండి'
-              : 'Securely upload required supporting proofs for departmental verification'}
-          </p>
+    <div className="w-full space-y-5 animate-in fade-in">
+      {/* HEADER WITH PROGRESS TRACKER */}
+      <div className="bg-[#F8FAFC] border border-slate-200 rounded-2xl p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 className="text-base font-extrabold text-[#101828] flex items-center gap-2">
+              <FileCheck className="w-5 h-5 text-[#2563EB]" />
+              <span>{language === 'te' ? 'సహాయక పత్రాల అప్‌లోడ్' : 'Required Supporting Documents'}</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {language === 'te'
+                ? 'ధృవీకరణ మరియు ఆటోమేటెడ్ OCR కోసం పత్రాలను అప్‌లోడ్ చేయండి'
+                : 'Upload authentic proofs for AI pre-screening and officer adjudication'}
+            </p>
+          </div>
+
+          <div
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap self-start sm:self-auto flex items-center gap-1.5 ${
+              isComplete
+                ? 'bg-[#15803D]/10 text-[#15803D] border border-[#15803D]/30'
+                : 'bg-amber-50 text-[#B45309] border border-amber-200'
+            }`}
+          >
+            {isComplete ? (
+              <CheckCircle2 className="w-4 h-4 text-[#15803D]" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-[#B45309]" />
+            )}
+            <span>
+              {language === 'te'
+                ? `${mandatoryCount} లో ${mandatoryUploadedCount} పత్రాలు అప్‌లోడ్ అయ్యాయి`
+                : `${mandatoryUploadedCount} of ${mandatoryCount} Mandatory Uploaded`}
+            </span>
+          </div>
         </div>
-        <div
-          style={{
-            padding: '0.375rem 0.75rem',
-            borderRadius: '9999px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            background: isComplete ? '#d1fae5' : '#fef3c7',
-            color: isComplete ? '#065f46' : '#92400e',
-          }}
-        >
-          {language === 'te'
-            ? `${mandatoryCount} లో ${mandatoryUploadedCount} తప్పనిసరి పత్రాలు సిద్ధం`
-            : `${mandatoryUploadedCount} of ${mandatoryCount} Mandatory Uploaded`}
+
+        {/* Progress Bar */}
+        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+          <div
+            className={`h-full transition-all duration-500 ${
+              isComplete ? 'bg-[#15803D]' : 'bg-[#2563EB]'
+            }`}
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
       </div>
 
+      {/* FEEDBACK BANNERS */}
       {errorMsg && (
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            marginBottom: '1rem',
-            borderRadius: '6px',
-            background: '#fee2e2',
-            color: '#991b1b',
-            fontSize: '0.875rem',
-          }}
-        >
-          ⚠️ {errorMsg}
+        <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+          <span>{errorMsg}</span>
         </div>
       )}
 
       {successMsg && (
-        <div
-          style={{
-            padding: '0.75rem 1rem',
-            marginBottom: '1rem',
-            borderRadius: '6px',
-            background: '#ecfdf5',
-            color: '#065f46',
-            fontSize: '0.875rem',
-          }}
-        >
-          ✓ {successMsg}
+        <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+          <span>{successMsg}</span>
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {/* DOCUMENT CARDS LIST */}
+      <div className="space-y-3">
         {checklist.map((item) => {
           const isUploading = uploadingTypeId === item.requiredDocumentTypeId;
-          const maxMb = (item.maxSizeBytes / (1024 * 1024)).toFixed(1);
+          const maxMb = (item.maxSizeBytes / (1024 * 1024)).toFixed(0);
 
           return (
             <div
               key={item.requiredDocumentTypeId}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '1rem',
-                borderRadius: '6px',
-                border: item.uploaded ? '1px solid #10b981' : '1px solid #e5e7eb',
-                background: item.uploaded ? '#f0fdf4' : '#fafafa',
-              }}
+              className={`p-4 md:p-5 rounded-2xl border transition-all ${
+                item.uploaded
+                  ? 'bg-emerald-50/40 border-emerald-200 hover:border-emerald-300'
+                  : item.required
+                  ? 'bg-white border-amber-200 hover:border-amber-300 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
+              }`}
             >
-              <div style={{ flex: 1, marginRight: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1f2937' }}>
-                    {language === 'te' ? item.nameTe : item.nameEn}
-                  </span>
-                  {item.required ? (
-                    <span
-                      style={{
-                        background: '#fee2e2',
-                        color: '#991b1b',
-                        padding: '0.1rem 0.4rem',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {language === 'te' ? 'తప్పనిసరి' : 'REQUIRED'}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {/* Document Metadata */}
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-extrabold text-sm text-[#101828]">
+                      {language === 'te' && item.nameTe ? item.nameTe : item.nameEn}
                     </span>
-                  ) : (
-                    <span
-                      style={{
-                        background: '#f3f4f6',
-                        color: '#4b5563',
-                        padding: '0.1rem 0.4rem',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                      }}
-                    >
-                      {language === 'te' ? 'ఐచ్ఛికం' : 'OPTIONAL'}
+                    {item.required ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        * {language === 'te' ? 'తప్పనిసరి' : 'Mandatory'}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600">
+                        {language === 'te' ? 'ఐచ్ఛికం' : 'Optional'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
+                    <span>
+                      {language === 'te' ? 'అనుమతించబడినవి: ' : 'Format: '}{' '}
+                      <span className="font-mono text-[11px] text-slate-700">
+                        {item.acceptedMimeTypes.replace(/image\/|application\//g, '').toUpperCase()}
+                      </span>
                     </span>
+                    <span>&bull;</span>
+                    <span>Max: {maxMb} MB</span>
+                  </div>
+
+                  {item.uploaded && (
+                    <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-[#15803D]">
+                      <CheckCircle2 className="w-4 h-4 text-[#15803D]" />
+                      <span className="truncate max-w-[200px] sm:max-w-xs">{item.fileName}</span>
+                      {item.fileSizeBytes && (
+                        <span className="text-slate-400 font-normal">
+                          ({(item.fileSizeBytes / 1024).toFixed(1)} KB)
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
 
-                <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  <span>{language === 'te' ? 'ఫార్మాట్లు: ' : 'Accepted: '} {item.acceptedMimeTypes.replace(/image\/|application\//g, '').toUpperCase()}</span>
-                  <span style={{ margin: '0 0.5rem' }}>•</span>
-                  <span>{language === 'te' ? 'గరిష్ట పరిమాణం: ' : 'Max: '} {maxMb} MB</span>
-                </div>
-
-                {item.uploaded && (
-                  <div style={{ marginTop: '0.35rem', fontSize: '0.8rem', color: '#047857', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>✓ {item.fileName}</span>
-                    {item.fileSizeBytes && (
-                      <span style={{ color: '#6b7280' }}>({(item.fileSizeBytes / 1024).toFixed(1)} KB)</span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {item.uploaded && item.previewUrl && (
-                  <a
-                    href={item.previewUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      borderRadius: '6px',
-                      background: '#e0f2fe',
-                      color: '#0369a1',
-                      textDecoration: 'none',
-                      fontSize: '0.8rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {language === 'te' ? 'పరిశీలించు' : 'Preview'}
-                  </a>
-                )}
-
-                {item.uploaded && item.downloadUrl && (
-                  <a
-                    href={item.downloadUrl}
-                    download
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      borderRadius: '6px',
-                      background: '#f3f4f6',
-                      color: '#374151',
-                      textDecoration: 'none',
-                      fontSize: '0.8rem',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {language === 'te' ? 'డౌన్‌లోడ్' : 'Download'}
-                  </a>
-                )}
-
-                {canEdit && (
-                  <>
-                    <input
-                      type="file"
-                      ref={(el) => (fileInputRefs.current[item.requiredDocumentTypeId] = el)}
-                      style={{ display: 'none' }}
-                      accept={item.acceptedMimeTypes}
-                      onChange={(e) => handleFileChange(item.requiredDocumentTypeId, e)}
-                    />
-                    <button
-                      type="button"
-                      disabled={isUploading}
-                      onClick={() => fileInputRefs.current[item.requiredDocumentTypeId]?.click()}
-                      style={{
-                        padding: '0.4rem 0.75rem',
-                        borderRadius: '6px',
-                        background: item.uploaded ? '#f9fafb' : '#2563eb',
-                        color: item.uploaded ? '#374151' : '#ffffff',
-                        border: item.uploaded ? '1px solid #d1d5db' : 'none',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        cursor: isUploading ? 'not-allowed' : 'pointer',
-                      }}
+                {/* Document Actions */}
+                <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                  {item.uploaded && item.previewUrl && (
+                    <a
+                      href={item.previewUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3 py-1.5 bg-[#EAF2FF] text-[#2563EB] hover:bg-blue-100 font-bold rounded-xl text-xs transition flex items-center gap-1"
                     >
-                      {isUploading
-                        ? language === 'te' ? 'అప్‌లోడ్...' : 'Uploading...'
-                        : item.uploaded
-                        ? language === 'te' ? 'మార్చండి' : 'Replace'
-                        : language === 'te' ? 'అప్‌లోడ్ చేయండి' : 'Upload'}
-                    </button>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>{language === 'te' ? 'చూడండి' : 'Preview'}</span>
+                    </a>
+                  )}
 
-                    {item.uploaded && item.documentId && (
+                  {canEdit && (
+                    <>
+                      <input
+                        type="file"
+                        ref={(el) => (fileInputRefs.current[item.requiredDocumentTypeId] = el)}
+                        className="hidden"
+                        accept={item.acceptedMimeTypes}
+                        onChange={(e) => handleFileChange(item.requiredDocumentTypeId, e)}
+                      />
+
                       <button
                         type="button"
-                        onClick={() => handleDelete(item.documentId!)}
-                        style={{
-                          padding: '0.4rem 0.6rem',
-                          borderRadius: '6px',
-                          background: '#fee2e2',
-                          color: '#dc2626',
-                          border: 'none',
-                          fontSize: '0.8rem',
-                          cursor: 'pointer',
-                        }}
-                        title={language === 'te' ? 'తొలగించు' : 'Remove document'}
+                        disabled={isUploading}
+                        onClick={() => fileInputRefs.current[item.requiredDocumentTypeId]?.click()}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                          isUploading
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            : item.uploaded
+                            ? 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                            : 'bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-xs'
+                        }`}
                       >
-                        ✕
+                        {isUploading ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : item.uploaded ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>{language === 'te' ? 'మార్చు' : 'Replace'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-3.5 h-3.5" />
+                            <span>{language === 'te' ? 'అప్‌లోడ్' : 'Upload'}</span>
+                          </>
+                        )}
                       </button>
-                    )}
-                  </>
-                )}
+
+                      {item.uploaded && item.documentId && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(item.documentId!)}
+                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                          title="Remove document"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           );

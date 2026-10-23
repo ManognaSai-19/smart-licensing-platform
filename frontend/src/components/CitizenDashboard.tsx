@@ -3,6 +3,8 @@ import { ApplicationDetail, ApplicationSummary } from '../types/application';
 import { applicationApi } from '../services/applicationApi';
 import { ApplicationWizard } from './ApplicationWizard';
 import { ApplicationDetailView } from './ApplicationDetailView';
+import { VoiceAssistantModal } from './VoiceAssistantModal';
+import { useAuth } from '../context/AuthContext';
 import {
   FileText,
   Plus,
@@ -17,10 +19,19 @@ import {
   Calendar,
   ArrowRight,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Mic,
+  Compass,
 } from 'lucide-react';
 
-export const CitizenDashboard: React.FC = () => {
+interface CitizenDashboardProps {
+  onNavigate?: (navKey: string) => void;
+}
+
+export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }) => {
+  const { user } = useAuth();
+  const userName = user?.fullName || 'Sai Manogna';
+
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -33,6 +44,9 @@ export const CitizenDashboard: React.FC = () => {
   const [isWizardOpen, setIsWizardOpen] = useState<boolean>(false);
   const [wizardApp, setWizardApp] = useState<ApplicationDetail | null>(null);
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
+
+  // General Voice Assistant Modal
+  const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState<boolean>(false);
 
   // Map to store rejection reasons for quick display
   const [rejectionReasons, setRejectionReasons] = useState<Record<number, string>>({});
@@ -141,59 +155,181 @@ export const CitizenDashboard: React.FC = () => {
     }
   };
 
+  // Activity Counts from real backend data
+  const inProgressCount = applications.filter(
+    (a) => a.status === 'SUBMITTED' || a.status === 'RESUBMITTED' || a.status === 'UNDER_VERIFICATION'
+  ).length;
+  const needsActionCount = applications.filter((a) => a.status === 'REJECTED').length;
+  const completedCount = applications.filter((a) => a.status === 'APPROVED').length;
+
   return (
-    <div className="space-y-5 p-4 sm:p-5 bg-[#F8FAFC]">
-      {/* SECTION 1: APPLY FOR A LICENSE (HERO ACTION CARD) */}
-      <div className="bg-gradient-to-br from-[#101828] via-[#162544] to-[#2563EB] rounded-3xl p-5 text-white shadow-lg relative overflow-hidden">
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md text-[11px] font-semibold text-[#EAF2FF]">
-            <Sparkles className="w-3.5 h-3.5 text-[#EAF2FF]" />
-            <span>Digital Government Services</span>
+    <div className="w-full space-y-6 max-w-6xl mx-auto pb-8">
+      {/* SCREEN 5 GREETING BANNER */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#101828] tracking-tight">
+            Good morning, {userName}!
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            What would you like to do today?
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleOpenWizard()}
+          className="self-start sm:self-center px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-2xl shadow-sm transition flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4 text-white" />
+          <span>New Application</span>
+        </button>
+      </div>
+
+      {/* SCREEN 5: 3 QUICK ACTION CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Action 1: New Application */}
+        <button
+          type="button"
+          onClick={() => handleOpenWizard()}
+          className="p-5 rounded-3xl bg-[#2563EB] text-white text-left shadow-md hover:bg-[#1D4ED8] transition flex flex-col justify-between h-36 group relative overflow-hidden"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+            <Plus className="w-5 h-5 text-white stroke-[2.5]" />
+          </div>
+          <div>
+            <h4 className="text-base font-extrabold">New Application</h4>
+            <p className="text-xs text-[#EAF2FF] mt-0.5">Start a service request</p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-white/70 absolute bottom-5 right-5 group-hover:translate-x-1 transition-transform" />
+        </button>
+
+        {/* Action 2: Explore Services */}
+        <button
+          type="button"
+          onClick={() => (onNavigate ? onNavigate('explore-services') : null)}
+          className="p-5 rounded-3xl bg-white text-left border border-slate-200/90 shadow-xs hover:border-[#2563EB] hover:shadow-md transition flex flex-col justify-between h-36 group relative"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
+            <Compass className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-base font-extrabold text-[#101828]">Explore Services</h4>
+            <p className="text-xs text-slate-500 mt-0.5">View all available services</p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-slate-400 absolute bottom-5 right-5 group-hover:translate-x-1 group-hover:text-[#2563EB] transition-all" />
+        </button>
+
+        {/* Action 3: My Applications */}
+        <a
+          href="#recent-applications"
+          className="p-5 rounded-3xl bg-white text-left border border-slate-200/90 shadow-xs hover:border-[#2563EB] hover:shadow-md transition flex flex-col justify-between h-36 group relative"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-base font-extrabold text-[#101828]">My Applications</h4>
+            <p className="text-xs text-slate-500 mt-0.5">Track your requests</p>
+          </div>
+          <ArrowRight className="w-4 h-4 text-slate-400 absolute bottom-5 right-5 group-hover:translate-x-1 group-hover:text-[#2563EB] transition-all" />
+        </a>
+      </div>
+
+      {/* SCREEN 5: YOUR ACTIVITY SUMMARY & TALK TO ASSISTANT */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left: Your Activity KPI Cards */}
+        <div className="lg:col-span-8 bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[#101828]">Your Activity</h3>
+            <span className="text-[11px] font-semibold text-slate-400">Real-time status</span>
           </div>
 
-          <h2 className="text-xl font-extrabold tracking-tight">Apply for a License</h2>
-          <p className="text-xs text-[#EAF2FF]/90 leading-relaxed max-w-xs">
-            Apply for driving licenses, municipal trade permits, and certificates with step-by-step guidance.
+          <div className="grid grid-cols-3 gap-3">
+            {/* In Progress */}
+            <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-center space-y-1">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#2563EB] block">
+                {inProgressCount}
+              </span>
+              <span className="text-[11px] sm:text-xs font-bold text-[#101828] block">
+                In Progress
+              </span>
+              <span className="text-[10px] text-slate-400 hidden sm:block">Under verification</span>
+            </div>
+
+            {/* Needs Action */}
+            <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 text-center space-y-1">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#B45309] block">
+                {needsActionCount}
+              </span>
+              <span className="text-[11px] sm:text-xs font-bold text-[#B45309] block">
+                Needs Action
+              </span>
+              <span className="text-[10px] text-amber-600/80 hidden sm:block">Corrections needed</span>
+            </div>
+
+            {/* Completed */}
+            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200/80 text-center space-y-1">
+              <span className="text-2xl sm:text-3xl font-extrabold text-[#15803D] block">
+                {completedCount}
+              </span>
+              <span className="text-[11px] sm:text-xs font-bold text-[#15803D] block">
+                Completed
+              </span>
+              <span className="text-[10px] text-emerald-600/80 hidden sm:block">Approved licenses</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Talk to Assistant Card */}
+        <div className="lg:col-span-4 bg-gradient-to-br from-[#101828] via-[#162544] to-[#2563EB] rounded-3xl p-5 text-white shadow-md flex flex-col justify-between space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0">
+              <Mic className="w-5 h-5 text-[#EAF2FF]" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white">Talk to Assistant</h4>
+              <p className="text-[11px] text-[#EAF2FF]/80">Telugu & English voice help</p>
+            </div>
+          </div>
+
+          <p className="text-xs text-[#EAF2FF]/90 leading-relaxed">
+            Need help? Ask your questions using voice or text for step-by-step guidance.
           </p>
 
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={() => handleOpenWizard()}
-              className="w-full py-3 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white font-bold rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2"
-            >
-              <Plus className="w-4 h-4 text-white stroke-[3]" />
-              <span>Apply for New License</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsVoiceAssistantOpen(true)}
+            className="w-full py-2.5 px-4 bg-white text-[#2563EB] hover:bg-[#EAF2FF] font-bold rounded-2xl text-xs shadow-sm transition flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
+            <span>Start Talking</span>
+          </button>
         </div>
       </div>
 
-      {/* SECTION 2: CHECK STATUS (SEARCH CARD) */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm space-y-3">
+      {/* QUICK STATUS LOOKUP CARD */}
+      <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-3">
         <div className="flex items-center gap-2 text-[#101828] font-bold text-sm">
           <Search className="w-4 h-4 text-[#2563EB]" />
           <span>Check Application Status</span>
         </div>
 
         <form onSubmit={handleCheckStatus} className="space-y-2">
-          <div className="relative">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={statusSearchRef}
               onChange={(e) => setStatusSearchRef(e.target.value)}
-              placeholder="Enter Reference (e.g. APP-20261023-...)"
-              className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-2xl text-xs font-mono text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
+              placeholder="Enter Reference (e.g. DRL-2026-001 or APP-20261023-...)"
+              className="flex-1 px-4 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-2xl text-xs font-mono text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
             />
+            <button
+              type="submit"
+              className="px-6 py-2.5 bg-[#101828] hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs shadow-sm transition whitespace-nowrap"
+            >
+              Check Status
+            </button>
           </div>
-
-          <button
-            type="submit"
-            className="w-full py-2.5 bg-[#101828] hover:bg-[#1e293b] text-white font-semibold rounded-2xl text-xs shadow-sm transition"
-          >
-            Check Status
-          </button>
         </form>
 
         {statusSearchError && (
@@ -204,7 +340,7 @@ export const CitizenDashboard: React.FC = () => {
         )}
 
         {statusSearchResult && (
-          <div className="p-3.5 bg-[#EAF2FF] border border-[#cfe0fc] rounded-2xl space-y-2">
+          <div className="p-4 bg-[#EAF2FF] border border-[#cfe0fc] rounded-2xl space-y-2">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-[#101828]">
                 {statusSearchResult.referenceNumber}
@@ -219,7 +355,7 @@ export const CitizenDashboard: React.FC = () => {
             <button
               type="button"
               onClick={() => setSelectedAppId(statusSearchResult.id)}
-              className="w-full mt-2 py-1.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-[11px] rounded-xl transition"
+              className="w-full mt-2 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl transition"
             >
               View Full Status & Timeline →
             </button>
@@ -227,13 +363,13 @@ export const CitizenDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* SECTION 3: APPLIED TILL NOW (APPLICATION HISTORY) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
+      {/* SCREEN 5: RECENT APPLICATIONS LIST / TABLE */}
+      <div id="recent-applications" className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="text-sm font-bold text-[#101828]">Applied Till Now</h3>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#EAF2FF] text-[#2563EB]">
+            <h3 className="text-sm font-bold text-[#101828]">Recent Applications</h3>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#EAF2FF] text-[#2563EB]">
               {applications.length}
             </span>
           </div>
@@ -250,14 +386,14 @@ export const CitizenDashboard: React.FC = () => {
         </div>
 
         {loading && applications.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-400">Loading your applications...</div>
+          <div className="py-12 text-center text-xs text-slate-400">Loading your applications...</div>
         ) : applications.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 border border-slate-200/80 text-center space-y-3">
+          <div className="p-8 text-center space-y-3">
             <FileText className="w-10 h-10 text-slate-300 mx-auto" />
             <div>
               <h4 className="text-sm font-bold text-[#101828]">No applications applied yet</h4>
-              <p className="text-xs text-[#101828]/60 mt-1 max-w-xs mx-auto">
-                Tap the "Apply for a License" card above to submit your first digital application.
+              <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                Tap the "New Application" button above to submit your first digital application.
               </p>
             </div>
           </div>
@@ -270,39 +406,62 @@ export const CitizenDashboard: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  className={`bg-white rounded-3xl p-4 border transition-all ${
+                  className={`p-4 rounded-2xl border transition-all ${
                     isRejected
-                      ? 'border-rose-300 shadow-md ring-1 ring-rose-200'
-                      : 'border-slate-200/80 shadow-sm hover:border-slate-300'
+                      ? 'border-rose-300 bg-rose-50/20 shadow-xs'
+                      : 'border-slate-200 bg-[#F8FAFC]/50 hover:bg-white hover:border-slate-300'
                   }`}
                 >
-                  {/* Card Header */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-xs font-bold text-[#2563EB]">
-                      {item.referenceNumber}
-                    </span>
-                    {getStatusBadge(item.status)}
-                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-[#2563EB]">
+                          {item.referenceNumber}
+                        </span>
+                        {getStatusBadge(item.status)}
+                      </div>
+                      <h4 className="text-sm font-bold text-[#101828]">{item.serviceName}</h4>
+                      <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                        <span className="inline-flex items-center gap-1">
+                          <Building className="w-3 h-3 text-slate-400" />
+                          <span>{item.departmentName}</span>
+                        </span>
+                        <span>&bull;</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                        </span>
+                      </div>
+                    </div>
 
-                  {/* Card Title & Info */}
-                  <div className="mt-2 space-y-1">
-                    <h4 className="text-sm font-bold text-[#101828]">{item.serviceName}</h4>
-                    <div className="flex items-center gap-2 text-[11px] text-[#101828]/60">
-                      <span className="inline-flex items-center gap-1">
-                        <Building className="w-3 h-3 text-slate-400" />
-                        <span>{item.departmentName}</span>
-                      </span>
-                      <span>&bull;</span>
-                      <span className="inline-flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        <span>{new Date(item.createdAt).toLocaleDateString()}</span>
-                      </span>
+                    <div className="flex items-center gap-2 self-start sm:self-center pt-2 sm:pt-0">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAppId(item.id)}
+                        className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-[#2563EB] text-[#2563EB] text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Details</span>
+                      </button>
+
+                      {item.status === 'DRAFT' && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const full = await applicationApi.getApplicationById(item.id);
+                            handleOpenWizard(full);
+                          }}
+                          className="px-3.5 py-1.5 bg-[#2563EB] text-white text-xs font-semibold rounded-xl hover:bg-[#1D4ED8] transition"
+                        >
+                          Continue Draft →
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* PROMINENT REJECTION REASON & FIX OPTION */}
+                  {/* PROMINENT REJECTION REASON & 1-TAP RESUBMIT */}
                   {isRejected && (
-                    <div className="mt-3 p-3 bg-rose-50/90 border border-rose-200 rounded-2xl space-y-2">
+                    <div className="mt-3 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl space-y-2">
                       <div className="flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                         <div>
@@ -326,31 +485,6 @@ export const CitizenDashboard: React.FC = () => {
                       </button>
                     </div>
                   )}
-
-                  {/* Card Actions */}
-                  <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedAppId(item.id)}
-                      className="text-xs text-[#2563EB] hover:text-[#1D4ED8] font-semibold inline-flex items-center gap-1"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>View Dossier & Timeline</span>
-                    </button>
-
-                    {item.status === 'DRAFT' && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          const full = await applicationApi.getApplicationById(item.id);
-                          handleOpenWizard(full);
-                        }}
-                        className="px-3 py-1 bg-[#2563EB] text-white text-xs font-semibold rounded-xl hover:bg-[#1D4ED8] transition"
-                      >
-                        Continue Draft →
-                      </button>
-                    )}
-                  </div>
                 </div>
               );
             })}
@@ -375,7 +509,7 @@ export const CitizenDashboard: React.FC = () => {
         />
       )}
 
-      {/* Application Dossier Detail View */}
+      {/* Application Dossier Detail View (Screen 11) */}
       {selectedAppId && (
         <ApplicationDetailView
           applicationId={selectedAppId}
@@ -383,6 +517,18 @@ export const CitizenDashboard: React.FC = () => {
           onEditApplication={handleEditFromDossier}
         />
       )}
+
+      {/* General Voice Assistant Modal */}
+      {isVoiceAssistantOpen && (
+        <VoiceAssistantModal
+          isOpen={isVoiceAssistantOpen}
+          serviceCode="general"
+          serviceName="Citizen Licensing Services"
+          onClose={() => setIsVoiceAssistantOpen(false)}
+          onFormUpdate={() => {}}
+        />
+      )}
     </div>
   );
 };
+

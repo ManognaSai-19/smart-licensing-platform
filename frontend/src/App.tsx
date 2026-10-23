@@ -96,7 +96,7 @@ function MainApp() {
     >
       {/* CITIZEN DASHBOARD */}
       {(activeNav === 'citizen-dashboard' || activeNav === 'my-applications') && (
-        <CitizenDashboard />
+        <CitizenDashboard onNavigate={setActiveNav} />
       )}
 
       {/* EXPLORE SERVICES CATALOGUE */}
