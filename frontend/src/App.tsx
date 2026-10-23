@@ -1,192 +1,274 @@
 import { useEffect, useState } from 'react';
-import {
-  FileText,
-  UserCheck,
-  ShieldCheck,
-  Layers,
-  FlaskConical,
-  LogOut,
-  Shield,
-} from 'lucide-react';
 import { ServiceCatalogue } from './components/ServiceCatalogue';
 import { CitizenDashboard } from './components/CitizenDashboard';
 import { OfficerDashboard } from './components/OfficerDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ResearchBenchmarkView } from './components/ResearchBenchmarkView';
 import { MobileAuthScreen } from './components/MobileAuthScreen';
+import { LandingPage } from './components/LandingPage';
+import { AppShell } from './components/AppShell';
+import { AccessibilitySetupModal } from './components/AccessibilitySetupModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CheckCircle2, Clock, ArrowRight } from 'lucide-react';
 
 function MainApp() {
-  const { user, isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'citizen' | 'officer' | 'admin' | 'catalogue' | 'research'>('citizen');
+  const { user, isAuthenticated } = useAuth();
 
-  // Auto-route tabs based on user role upon login
+  // Navigation State
+  const [activeNav, setActiveNav] = useState<string>('citizen-dashboard');
+
+  // Modals & Preferences State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'te'>('en');
+
+  // Load language preference from storage if exists
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('smart_licensing_accessibility');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.language) setLanguage(parsed.language);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Auto-route active navigation based on user role upon login
   useEffect(() => {
     if (user?.role === 'OFFICER') {
-      setActiveTab('officer');
+      setActiveNav('officer-queue');
     } else if (user?.role === 'ADMIN') {
-      setActiveTab('admin');
+      setActiveNav('admin-dashboard');
     } else if (user?.role === 'CITIZEN') {
-      setActiveTab('citizen');
+      setActiveNav('citizen-dashboard');
     }
   }, [user?.role]);
 
-  // If not logged in, immediately show the clean Mobile Login/Register screen
+  // UN-AUTHENTICATED: Show Public Landing Page & Auth Modal
   if (!isAuthenticated) {
-    return <MobileAuthScreen />;
+    return (
+      <>
+        <LandingPage
+          onLoginClick={() => {
+            setAuthMode('login');
+            setIsAuthModalOpen(true);
+          }}
+          onRegisterClick={() => {
+            setAuthMode('register');
+            setIsAuthModalOpen(true);
+          }}
+          onExploreServices={() => {
+            setAuthMode('login');
+            setIsAuthModalOpen(true);
+          }}
+          onOpenAccessibility={() => setIsAccessibilityOpen(true)}
+          language={language}
+          onLanguageChange={setLanguage}
+        />
+
+        {isAuthModalOpen && (
+          <MobileAuthScreen
+            initialMode={authMode}
+            onClose={() => setIsAuthModalOpen(false)}
+          />
+        )}
+
+        <AccessibilitySetupModal
+          isOpen={isAccessibilityOpen}
+          onClose={() => setIsAccessibilityOpen(false)}
+          onSave={(prefs) => setLanguage(prefs.language)}
+        />
+      </>
+    );
   }
 
+  // AUTHENTICATED: Show Full Responsive AppShell with Role-based Views
   return (
-    <div className="min-h-screen bg-[#101828] sm:py-6 flex justify-center items-center font-sans">
-      {/* Smartphone Frame Container */}
-      <div className="w-full sm:max-w-md bg-[#F8FAFC] min-h-screen sm:min-h-[850px] sm:max-h-[92vh] sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-700/40 relative">
-        {/* Mobile App Header */}
-        <header className="bg-white border-b border-slate-200/80 px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center font-extrabold text-sm shadow-sm">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
+    <AppShell
+      activeNav={activeNav}
+      onNavigate={setActiveNav}
+      onOpenAccessibility={() => setIsAccessibilityOpen(true)}
+      language={language}
+      onLanguageChange={setLanguage}
+    >
+      {/* CITIZEN DASHBOARD */}
+      {(activeNav === 'citizen-dashboard' || activeNav === 'my-applications') && (
+        <CitizenDashboard />
+      )}
+
+      {/* EXPLORE SERVICES CATALOGUE */}
+      {activeNav === 'explore-services' && (
+        <div className="space-y-4">
+          <ServiceCatalogue />
+        </div>
+      )}
+
+      {/* OFFICER QUEUE & CASE MANAGEMENT */}
+      {activeNav === 'officer-queue' && (
+        <div className="space-y-4">
+          <OfficerDashboard />
+        </div>
+      )}
+
+      {/* ADMIN DASHBOARD */}
+      {activeNav === 'admin-dashboard' && (
+        <div className="space-y-4">
+          <AdminDashboard />
+        </div>
+      )}
+
+      {/* RESEARCH BENCHMARK */}
+      {activeNav === 'research-benchmark' && (
+        <div className="space-y-4">
+          <ResearchBenchmarkView />
+        </div>
+      )}
+
+      {/* NOTIFICATIONS FEED (Screen 15 Preview) */}
+      {activeNav === 'notifications' && (
+        <div className="max-w-4xl mx-auto space-y-4 animate-in fade-in">
+          <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-[#101828] text-sm tracking-tight leading-none">Smart Licensing</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#EAF2FF] text-[#2563EB] border border-[#cfe0fc]">
-                  {user?.role || 'CITIZEN'}
+              <h2 className="text-xl font-extrabold text-[#101828]">Notifications</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Real-time alerts and application milestone updates</p>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#EAF2FF] text-[#2563EB]">
+              2 Unread
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-[#15803D]/10 text-[#15803D] flex items-center justify-center shrink-0 mt-0.5">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#101828]">Application Approved</h4>
+                  <span className="text-[10px] text-slate-400">10 mins ago</span>
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  Your Driving License application (ref: <span className="font-mono text-[#2563EB] font-bold">DRL-2026-001</span>) has been approved by the Transport Department.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-[#B45309]/10 text-[#B45309] flex items-center justify-center shrink-0 mt-0.5">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#101828]">Document Update Required</h4>
+                  <span className="text-[10px] text-slate-400">2 hours ago</span>
+                </div>
+                <p className="text-xs text-slate-600 mt-1">
+                  Officer notes: Please upload a clearer copy of address proof for application <span className="font-mono text-[#2563EB] font-bold">TRL-2026-015</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* USER PROFILE & PREFERENCES (Screen 15 Preview) */}
+      {activeNav === 'profile' && (
+        <div className="max-w-3xl mx-auto space-y-5 animate-in fade-in">
+          <div>
+            <h2 className="text-xl font-extrabold text-[#101828]">My Profile</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Account credentials and accessibility settings</p>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
+            <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+              <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] font-extrabold text-xl flex items-center justify-center">
+                {user?.fullName?.charAt(0) || 'U'}
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#101828]">{user?.fullName}</h3>
+                <p className="text-xs text-slate-500">{user?.email}</p>
+                <span className="text-[10px] font-bold text-[#2563EB] bg-[#EAF2FF] px-2 py-0.5 rounded-full inline-block mt-1">
+                  {user?.role}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-none mt-1">
-                Hi, {user?.fullName?.split(' ')[0] || 'User'}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-3.5 bg-[#F8FAFC] rounded-2xl border border-slate-200">
+                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Phone Number</span>
+                <span className="font-bold text-[#101828] mt-0.5 block">{user?.phoneNumber || 'Not provided'}</span>
+              </div>
+
+              <div className="p-3.5 bg-[#F8FAFC] rounded-2xl border border-slate-200">
+                <span className="text-slate-400 font-semibold block text-[10px] uppercase">Current Language</span>
+                <span className="font-bold text-[#101828] mt-0.5 block">{language === 'en' ? 'English (Default)' : 'Telugu (తెలుగు)'}</span>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setIsAccessibilityOpen(true)}
+                className="w-full sm:w-auto px-5 py-2.5 bg-white border border-slate-300 hover:border-[#2563EB] text-[#101828] text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2"
+              >
+                <span>Change Language & Accessibility Preferences</span>
+                <ArrowRight className="w-3.5 h-3.5 text-[#2563EB]" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HELP & SUPPORT FAQ (Screen 15 Preview) */}
+      {activeNav === 'help' && (
+        <div className="max-w-4xl mx-auto space-y-5 animate-in fade-in">
+          <div>
+            <h2 className="text-xl font-extrabold text-[#101828]">Help & Guidelines</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Everything you need to know about applying and using voice guidance</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+              <h4 className="text-xs font-bold text-[#101828]">How does Voice Assistance work?</h4>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                When filling any application form, tap the microphone button or the voice banner to speak your answers in English or Telugu. The system transcribes and reads back your input for confirmation.
+              </p>
+            </div>
+
+            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+              <h4 className="text-xs font-bold text-[#101828]">What does Document Pre-Screening do?</h4>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Our automated OCR checks extracted text against your entered form fields to help you catch typos before submission. AI findings are purely advisory and never reject applications automatically.
+              </p>
+            </div>
+
+            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+              <h4 className="text-xs font-bold text-[#101828]">What happens if my application is rejected?</h4>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                You will see a prominent explanation detailing the reviewing officer's reason, along with a 1-tap "Fix & Resubmit" button that retains your previous entries.
+              </p>
+            </div>
+
+            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+              <h4 className="text-xs font-bold text-[#101828]">How can I track my application status?</h4>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Use the "Check Status" card on your dashboard by entering your reference number, or check the "Applied Till Now" list for milestone timestamps.
               </p>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={logout}
-              title="Sign Out"
-              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-xl transition"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
-        </header>
-
-        {/* Scrollable Mobile Body */}
-        <main className="flex-1 overflow-y-auto pb-16 bg-[#F8FAFC]">
-          {activeTab === 'citizen' ? (
-            <CitizenDashboard />
-          ) : activeTab === 'officer' ? (
-            <div className="p-4">
-              <OfficerDashboard />
-            </div>
-          ) : activeTab === 'admin' ? (
-            <div className="p-4">
-              <AdminDashboard />
-            </div>
-          ) : activeTab === 'catalogue' ? (
-            <div className="p-4">
-              <ServiceCatalogue />
-            </div>
-          ) : activeTab === 'research' ? (
-            <div className="p-4">
-              <ResearchBenchmarkView />
-            </div>
-          ) : null}
-        </main>
-
-        {/* Mobile Sticky Bottom Navigation Bar */}
-        <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-slate-200/80 px-2 py-2 flex items-center justify-around z-30 shadow-lg">
-          {user?.role === 'CITIZEN' && (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveTab('citizen')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'citizen' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>My Licenses</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('catalogue')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'catalogue' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <Layers className="w-4 h-4" />
-                <span>Services</span>
-              </button>
-            </>
-          )}
-
-          {user?.role === 'OFFICER' && (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveTab('officer')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'officer' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <UserCheck className="w-4 h-4" />
-                <span>Officer Queue</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('catalogue')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'catalogue' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <Layers className="w-4 h-4" />
-                <span>Services</span>
-              </button>
-            </>
-          )}
-
-          {user?.role === 'ADMIN' && (
-            <>
-              <button
-                type="button"
-                onClick={() => setActiveTab('admin')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'admin' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Admin</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('catalogue')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'catalogue' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <Layers className="w-4 h-4" />
-                <span>Services</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('research')}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition ${
-                  activeTab === 'research' ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
-                }`}
-              >
-                <FlaskConical className="w-4 h-4" />
-                <span>Research</span>
-              </button>
-            </>
-          )}
-        </nav>
-      </div>
-    </div>
+      {/* Accessibility Setup Modal */}
+      <AccessibilitySetupModal
+        isOpen={isAccessibilityOpen}
+        onClose={() => setIsAccessibilityOpen(false)}
+        onSave={(prefs) => setLanguage(prefs.language)}
+      />
+    </AppShell>
   );
 }
 
