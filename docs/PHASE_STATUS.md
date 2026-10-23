@@ -3,8 +3,8 @@
 ## Project Overview
 - **Title**: Smart Digital Licensing Platform
 - **Subtitle**: A Voice-First, Explainable AI Framework for Accessible Digital Applications and Intelligent Document Pre-Screening
-- **Current Phase**: Phase 5 (Application Workflow & Lifecycle State Machine)
-- **Status**: Completed Phase 5 implementation, dynamic form validation engine, automated test suite (49/49 tests passing across all phases, 12 in Phase 5), production backend package & frontend build; awaiting user approval to proceed to Phase 6.
+- **Current Phase**: Phase 6 (Private Document Management)
+- **Status**: Completed Phase 6 implementation, private document storage service, binary magic-byte detection, IDOR protection, department boundary enforcement, dynamic checklist API, React upload component, and full test suite (64/64 tests passing across all phases, 15 in Phase 6); awaiting user approval to proceed to Phase 7.
 
 ---
 
@@ -17,9 +17,9 @@
 | **Phase 2** | Database Migrations & Persistence | **COMPLETED & APPROVED** | 14 relational tables, 5 enums, 14 JPA entities, 14 repositories; clean Flyway migrations & persistence verified. |
 | **Phase 3** | Authentication and Authorization | **COMPLETED & APPROVED** | Stateless JWT, BCrypt, role escalation prevention, citizen IDOR defense, officer department boundaries, audit logging. |
 | **Phase 4** | Configurable Service Catalogue | **COMPLETED & APPROVED** | Dynamic JSON form schemas, multilingual Telugu/English definitions, public catalogue & admin mutation APIs, React interactive service catalogue. 37/37 automated tests passing. |
-| **Phase 5** | Application Workflow & Lifecycle | **READY FOR APPROVAL** | Draft persistence, schema-driven form validation, state transitions (DRAFT -> SUBMITTED -> UNDER_VERIFICATION -> APPROVED/REJECTED -> RESUBMITTED), IDOR enforcement, department queues, audit log tracking. 49/49 automated tests passing. |
-| **Phase 6** | Private Document Management | PENDING | Awaiting Phase 5 approval. |
-| **Phase 7** | OCR & Explainable Pre-Screening | PENDING | - |
+| **Phase 5** | Application Workflow & Lifecycle | **COMPLETED & APPROVED** | Draft persistence, schema-driven form validation, state transitions (DRAFT -> SUBMITTED -> UNDER_VERIFICATION -> APPROVED/REJECTED -> RESUBMITTED), IDOR enforcement, department queues, audit log tracking. 49/49 automated tests passing. |
+| **Phase 6** | Private Document Management | **READY FOR APPROVAL** | Private disk storage with UUID keys, binary magic-byte verification (PDF, JPEG, PNG), MIME/size checks, SHA-256 integrity checksums, IDOR defense, department boundary streaming, replacement/deletion, dynamic checklist status API, React upload component. 64/64 automated tests passing. |
+| **Phase 7** | OCR & Explainable Pre-Screening | PENDING | Awaiting Phase 6 approval. |
 | **Phase 8** | Voice-First Multilingual Assistance | PENDING | - |
 | **Phase 9** | Citizen User Interface | PENDING | - |
 | **Phase 10** | Officer & Admin Dashboards | PENDING | - |
@@ -96,49 +96,58 @@
 
 ---
 
-## Next Action
-Wait for user review and explicit approval ("ok") of Phase 5 before starting Phase 6 (Private Document Management).
+## Phase 6 Implementation & Verification Evidence
 
 ### 1. Artifacts Created & Configured
-- **Backend Service Catalogue Layer**:
-  - **DTOs** (`backend/src/main/java/com/licensing/platform/dto/`):
-    - `DepartmentResponse`, `DepartmentRequest`: Department metadata and associated service counts.
-    - `ServiceSummaryResponse`, `ServiceDetailResponse`: Overview and deep schema representation.
-    - `ServiceCreateRequest`, `ServiceUpdateRequest`: Full service creation and updates.
-    - `ServiceFieldResponse`, `ServiceFieldRequest`: Dynamic form fields with validation rules and bilingual labels.
-    - `RequiredDocumentTypeResponse`, `RequiredDocumentTypeRequest`: Document checklist with MIME types and size caps.
-  - **Service** (`backend/src/main/java/com/licensing/platform/service/ServiceCatalogueService.java`):
-    - Department querying, creation, and updating.
-    - Full-text service search and department filtering.
-    - Dynamic form field lifecycle: Add, update, delete, with display order management.
-    - Required document lifecycle: Add, update, delete, with MIME and size constraints.
-    - Soft deactivation of services.
-  - **Controllers** (`backend/src/main/java/com/licensing/platform/controller/`):
-    - `DepartmentController`: `GET /api/departments`, `GET /api/departments/{id}`, `POST /api/departments` (ADMIN), `PUT /api/departments/{id}` (ADMIN).
-    - `ServiceCatalogueController`:
-      - Public: `GET /api/services` (supports `departmentId`, `query`, `activeOnly`), `GET /api/services/{id}`, `GET /api/services/code/{code}`.
-      - Admin: `POST /api/services`, `PUT /api/services/{id}`, `DELETE /api/services/{id}`, `POST /api/services/{id}/fields`, `PUT /api/services/{id}/fields/{fieldId}`, `DELETE /api/services/{id}/fields/{fieldId}`, `POST /api/services/{id}/documents`, `PUT /api/services/{id}/documents/{docId}`, `DELETE /api/services/{id}/documents/{docId}`.
-  - **Security Configuration** (`SecurityConfig.java`):
-    - Public read access for `GET /api/departments/**` and `GET /api/services/**`.
-    - Strict `@PreAuthorize("hasRole('ADMIN')")` on all create/update/delete mutations.
-  - **Data Initialization** (`DataInitializer.java`):
-    - Seeds default administrator account (`admin@licensing.gov.in` / `Admin@123`) on production/dev startup, disabled during tests (`@Profile("!test")`).
-
-- **Frontend Service Catalogue**:
-  - `frontend/src/types/service.ts`: TypeScript interfaces for `Department`, `ServiceSummary`, `ServiceDetail`, `ServiceField`, `RequiredDocumentType`.
-  - `frontend/src/services/serviceCatalogueApi.ts`: Type-safe fetch client for departments and services.
-  - `frontend/src/components/ServiceCatalogue.tsx`: Interactive catalogue with department filter pills, search bar, language switcher (English / Telugu), service cards, and modal showing dynamic form fields and required document checklists.
-  - `frontend/src/App.tsx`: Tabbed navigation switching between "Service Catalogue" and "System Health".
-  - Verified with `npm run build`: Zero errors, production bundle in `frontend/dist/`.
+- **Storage Configuration**:
+  - `backend/src/main/resources/application.properties` & `backend/src/test/resources/application.properties`: Configured `app.storage.upload-dir`, `spring.servlet.multipart.max-file-size=10MB`, `spring.servlet.multipart.max-request-size=25MB`.
+- **Private Storage Engine** (`backend/src/main/java/com/licensing/platform/service/DocumentStorageService.java`):
+  - Manages isolated disk directory outside web root.
+  - Generates unguessable UUID storage keys (`app_{appId}/{UUID}_{sanitizedFileName}`).
+  - Validates binary magic-byte signatures:
+    - PDF: starts with `%PDF-` (`0x25, 0x50, 0x44, 0x46`)
+    - JPEG: starts with `0xFF, 0xD8, 0xFF`
+    - PNG: starts with `0x89, 0x50, 0x4E, 0x47`
+  - Rejects binary header mismatches, spoofed extensions, path traversal (`..`, `/`, `\`), empty files, and oversized uploads.
+  - Calculates SHA-256 binary hash checksums.
+  - Provides streaming `Resource` resolution and file deletion.
+- **DTOs** (`backend/src/main/java/com/licensing/platform/dto/`):
+  - `DocumentUploadResponse`: Detailed document metadata including `storageKey`, `fileChecksum`, `previewUrl`, `downloadUrl`.
+  - `DocumentChecklistStatusResponse`: Dynamic checklist showing requirement state, upload status, accepted formats, and document IDs.
+- **Service Layer** (`backend/src/main/java/com/licensing/platform/service/DocumentService.java`):
+  - `uploadDocument`: Enforces citizen ownership, `DRAFT`/`REJECTED` lifecycle gate, service document type matching, magic-byte inspection, in-place document replacement without orphaned duplicates, and audit logging.
+  - `getApplicationDocuments`: Retrieves all uploaded documents with citizen/officer/admin access checks.
+  - `getDocumentChecklistStatus`: Enriches service requirement checklist with live upload states.
+  - `getDocumentEntity` & `getDocumentResource`: Streaming authorization checks (citizen owner, department-assigned officer, or admin).
+  - `deleteDocument`: Physical file and database cleanup with state gating (`DRAFT`/`REJECTED` only).
+  - `validateMandatoryDocuments`: Confirms presence of all required documents before final submission.
+- **Controller Layer** (`backend/src/main/java/com/licensing/platform/controller/DocumentController.java`):
+  - `POST /api/applications/{id}/documents` (multipart: file, `documentTypeId`) — Citizen upload.
+  - `GET /api/applications/{id}/documents` — List uploaded documents.
+  - `GET /api/applications/{id}/documents/checklist` — Dynamic checklist status.
+  - `GET /api/applications/{id}/documents/{docId}/preview` — In-browser inline streaming with MIME headers.
+  - `GET /api/applications/{id}/documents/{docId}/download` — Attachment download.
+  - `DELETE /api/applications/{id}/documents/{docId}` — Document removal.
+  - `POST /api/applications/{id}/documents/validate-checklist` — Programmatic checklist validation.
+- **Exception Handling** (`GlobalExceptionHandler.java`):
+  - Added dedicated handler for `MaxUploadSizeExceededException` (HTTP 400 Bad Request).
+- **Frontend Integration**:
+  - `frontend/src/types/document.ts`: TypeScript interfaces for `DocumentUploadResponse` and `DocumentChecklistStatus`.
+  - `frontend/src/services/documentApi.ts`: Type-safe REST client for upload, deletion, checklist status, and validation.
+  - `frontend/src/components/DocumentUploadSection.tsx`: Interactive React component with bilingual labels (English/Telugu), status indicators, format/size badges, file upload triggers, replace/remove buttons, and preview/download links.
 
 ### 2. Automated Test Execution Evidence
 - Command: `backend/mvnw.cmd test`
 - Results:
   ```
+  [INFO] Running com.licensing.platform.ApplicationWorkflowTest
+  [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.ApplicationWorkflowTest
   [INFO] Running com.licensing.platform.AuthenticationAndAuthorizationTest
   [INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.AuthenticationAndAuthorizationTest
   [INFO] Running com.licensing.platform.DatabaseMigrationAndPersistenceTest
   [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.DatabaseMigrationAndPersistenceTest
+  [INFO] Running com.licensing.platform.DocumentManagementTest
+  [INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.DocumentManagementTest
   [INFO] Running com.licensing.platform.HealthControllerTest
   [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.HealthControllerTest
   [INFO] Running com.licensing.platform.ServiceCatalogueTest
@@ -146,34 +155,29 @@ Wait for user review and explicit approval ("ok") of Phase 5 before starting Pha
   [INFO] 
   [INFO] Results:
   [INFO] 
-  [INFO] Tests run: 37, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] Tests run: 64, Failures: 0, Errors: 0, Skipped: 0
   [INFO] 
-  [INFO] ------------------------------------------------------------------------
   [INFO] BUILD SUCCESS
-  [INFO] ------------------------------------------------------------------------
-  [INFO] Total time: 40.105 s
+  [INFO] Total time: 52.047 s
   ```
-- Detailed Phase 4 Verifications:
-  1. `testGetAllDepartmentsPublic`: Verified public can list departments with live service counts.
-  2. `testGetDepartmentById`: Verified department retrieval by ID.
-  3. `testGetDepartmentNotFoundReturns404`: Verified 404 for unknown department ID.
-  4. `testGetAllServicesPublic`: Verified public can list all active services with summary metrics.
-  5. `testFilterServicesByDepartment`: Verified filtering services by department.
-  6. `testSearchServicesByQuery`: Verified search by keyword across service title and description.
-  7. `testGetServiceByIdWithFieldsAndDocuments`: Verified retrieval of complete dynamic form schema with ordered fields and required document checklist.
-  8. `testGetServiceByCode`: Verified retrieval by unique business code (`SRV_TRADE_LICENSE`).
-  9. `testGetServiceNotFoundReturns404`: Verified 404 for unknown service ID.
-  10. `testCreateServiceWithoutAuthReturns401`: Verified unauthenticated creation attempt returns 401.
-  11. `testCreateServiceAsCitizenReturns403`: Verified citizen creation attempt returns 403 Forbidden.
-  12. `testCreateServiceAsAdminSuccess`: Verified admin creates custom service with dynamic fields and document rules.
-  13. `testCreateServiceDuplicateCodeReturns409`: Verified duplicate service code rejection with 409 Conflict.
-  14. `testUpdateServiceAsAdmin`: Verified admin updating service properties, fee, and timeline.
-  15. `testManageDynamicFieldsAsAdmin`: Verified admin adding, updating, and deleting dynamic fields on an existing service.
-  16. `testManageRequiredDocumentsAsAdmin`: Verified admin adding and deleting required document rules.
-  17. `testDeactivateServiceAsAdmin`: Verified soft deactivation hides service from public listings while retaining administrative records.
-  18. `testCreateDepartmentAsAdmin`: Verified admin creating a new department.
+- Detailed Phase 6 Verifications in `DocumentManagementTest`:
+  1. `testUploadValidPdfDocumentSuccess`: Citizen uploads authentic PDF; verified binary `%PDF-` header, disk storage, SHA-256 checksum, and metadata.
+  2. `testUploadValidJpegDocumentSuccess`: Citizen uploads authentic JPEG; verified `image/jpeg` magic bytes (`0xFF, 0xD8, 0xFF`).
+  3. `testUploadValidPngDocumentSuccess`: Citizen uploads authentic PNG; verified `image/png` magic bytes (`0x89, 0x50, 0x4E, 0x47`).
+  4. `testUploadSpoofedFileFailsMagicByteValidation`: ASCII text spoofed as `.pdf` with declared `application/pdf` is rejected with 400 Bad Request.
+  5. `testUploadOversizedFileReturns400`: File exceeding `maxSizeBytes` (5 MB) is rejected with 400 Bad Request.
+  6. `testPathTraversalFilenameRejected`: Filename containing `../../etc/passwd.pdf` is rejected with 400 Bad Request.
+  7. `testUploadDocumentToOtherCitizenApplicationReturns403`: IDOR check prevents Citizen B uploading to Citizen A's application.
+  8. `testUploadDocumentAfterSubmissionReturnsConflict`: State machine blocks document uploads once application has transitioned to `SUBMITTED`.
+  9. `testPreviewAndDownloadDocumentAsOwner`: Streams file bytes with correct security headers (`Content-Type`, `Content-Disposition`, `Cache-Control`).
+  10. `testPreviewDocumentOtherCitizenReturns403`: Citizen B is forbidden from previewing Citizen A's documents.
+  11. `testOfficerDepartmentIsolationForDocuments`: Department boundary verified — Transport Officer can preview; Municipal Officer is denied 403 Forbidden.
+  12. `testDocumentReplacementForSameDocumentType`: Uploading a new file for the same document type replaces the old file on disk and in DB without orphan records.
+  13. `testDocumentDeletionLifecycle`: Citizen can delete document while in `DRAFT`; physical file and record cleaned up; deleted in `SUBMITTED` rejected.
+  14. `testGetDocumentChecklistStatus`: Returns complete checklist of service requirements with dynamic uploaded/missing flags.
+  15. `testMandatoryDocumentChecklistValidation`: Validates presence of mandatory documents; blocks incomplete applications and confirms completed ones.
 
 ---
 
 ## Next Action
-Wait for user review and explicit approval ("ok") of Phase 4 before starting Phase 5 (Application Workflow and Lifecycle State Machine).
+Wait for user review and explicit approval ("ok") of Phase 6 before starting Phase 7 (OCR & Explainable Pre-Screening Engine).
