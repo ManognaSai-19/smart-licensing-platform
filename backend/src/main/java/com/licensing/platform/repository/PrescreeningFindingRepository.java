@@ -10,5 +10,7 @@ import java.util.List;
 @Repository
 public interface PrescreeningFindingRepository extends JpaRepository<PrescreeningFinding, Long> {
     List<PrescreeningFinding> findByApplicationId(Long applicationId);
+    List<PrescreeningFinding> findByApplicationIdOrderByCreatedAtAsc(Long applicationId);
     List<PrescreeningFinding> findByApplicationIdAndOutcome(Long applicationId, FindingOutcome outcome);
+    void deleteByApplicationId(Long applicationId);
 }
