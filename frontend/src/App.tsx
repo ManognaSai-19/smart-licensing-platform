@@ -8,6 +8,7 @@ import { MobileAuthScreen } from './components/MobileAuthScreen';
 import { LandingPage } from './components/LandingPage';
 import { AppShell } from './components/AppShell';
 import { AccessibilitySetupModal } from './components/AccessibilitySetupModal';
+import { InstallPwaPrompt } from './components/InstallPwaPrompt';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CheckCircle2, Clock, ArrowRight } from 'lucide-react';
 
@@ -81,6 +82,9 @@ function MainApp() {
           onClose={() => setIsAccessibilityOpen(false)}
           onSave={(prefs) => setLanguage(prefs.language)}
         />
+
+        {/* PWA Mobile Installation Prompt */}
+        <InstallPwaPrompt />
       </>
     );
   }
@@ -268,6 +272,9 @@ function MainApp() {
         onClose={() => setIsAccessibilityOpen(false)}
         onSave={(prefs) => setLanguage(prefs.language)}
       />
+
+      {/* PWA Mobile Installation Prompt */}
+      <InstallPwaPrompt />
     </AppShell>
   );
 }
