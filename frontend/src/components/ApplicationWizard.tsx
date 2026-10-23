@@ -58,6 +58,17 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   // Voice Assistant Modal
   const [isVoiceAssistantOpen, setIsVoiceAssistantOpen] = useState<boolean>(false);
 
+  // Mandatory fields validation for Step 2
+  const mandatoryFields = serviceDetail?.fields.filter((f) => f.required) || [];
+  const unfilledMandatoryFields = mandatoryFields.filter((f) => {
+    const val = formData[f.fieldKey];
+    if (val === undefined || val === null) return true;
+    if (typeof val === 'string') return val.trim().length === 0;
+    if (typeof val === 'number') return isNaN(val);
+    return false;
+  });
+  const isStep2Valid = unfilledMandatoryFields.length === 0;
+
   useEffect(() => {
     fetchServices().then(setServices).catch(console.error);
   }, []);
@@ -363,6 +374,60 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                 </button>
               </div>
 
+              {/* Mandatory Fields Progress Banner */}
+              <div
+                className={`p-4 rounded-2xl border transition-all ${
+                  isStep2Valid
+                    ? 'bg-[#15803D]/10 border-[#15803D]/30 text-[#15803D]'
+                    : 'bg-[#EAF2FF] border-[#cfe0fc] text-[#101828]'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-sm shrink-0 ${
+                        isStep2Valid
+                          ? 'bg-[#15803D] text-white shadow-sm'
+                          : 'bg-[#2563EB] text-white shadow-sm'
+                      }`}
+                    >
+                      {isStep2Valid ? '✓' : '!'}
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold flex items-center gap-1.5">
+                        <span>
+                          {isStep2Valid
+                            ? 'All Mandatory Fields Completed'
+                            : 'Mandatory Fields Check'}
+                        </span>
+                        {isStep2Valid && (
+                          <span className="text-[10px] bg-[#15803D] text-white px-2 py-0.5 rounded-full font-bold">
+                            Ready for Next Step
+                          </span>
+                        )}
+                      </h5>
+                      <p className="text-[11px] text-slate-600 mt-0.5">
+                        {isStep2Valid
+                          ? 'All required fields are filled. You can now click "Next" below.'
+                          : `Please fill in all mandatory fields marked with an asterisk (*) to enable the "Next" button (${unfilledMandatoryFields.length} remaining).`}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start sm:self-center">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${
+                        isStep2Valid
+                          ? 'bg-[#15803D]/10 text-[#15803D] border border-[#15803D]/30'
+                          : 'bg-[#B45309]/10 text-[#B45309] border border-[#B45309]/30'
+                      }`}
+                    >
+                      {mandatoryFields.length - unfilledMandatoryFields.length} / {mandatoryFields.length} Mandatory Filled
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               {/* Form Fields Grid */}
               <div className="space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -373,19 +438,34 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                   {serviceDetail.fields.map((field) => {
                     const label = language === 'te' && field.labelTe ? field.labelTe : field.labelEn;
                     const val = formData[field.fieldKey] || '';
+                    const isFilled = typeof val === 'string' ? val.trim().length > 0 : val !== undefined && val !== null;
 
                     return (
                       <div
                         key={field.id}
-                        className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2"
+                        className={`p-4 rounded-xl border transition-all space-y-2 ${
+                          field.required && !isFilled
+                            ? 'bg-amber-50/30 border-amber-200'
+                            : 'bg-slate-50 border-slate-200'
+                        }`}
                       >
                         <div className="flex items-center justify-between">
                           <label
                             htmlFor={field.fieldKey}
-                            className="text-xs font-bold text-slate-800 flex items-center gap-1"
+                            className="text-xs font-bold text-slate-800 flex items-center gap-1.5"
                           >
                             <span>{label}</span>
-                            {field.required && <span className="text-red-500">*</span>}
+                            {field.required && (
+                              <span
+                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                  isFilled
+                                    ? 'bg-[#15803D]/10 text-[#15803D] border border-[#15803D]/20'
+                                    : 'bg-[#B45309]/15 text-[#B45309] border border-[#B45309]/30'
+                                }`}
+                              >
+                                {isFilled ? '✓ Filled' : '* Mandatory'}
+                              </span>
+                            )}
                           </label>
 
                           {/* Inline Voice Input Button */}
@@ -407,7 +487,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                             name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
-                            className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className={`w-full px-3 py-2 text-sm bg-white border rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:outline-none transition-colors ${
+                              field.required && !isFilled ? 'border-amber-300' : 'border-slate-300'
+                            }`}
                           >
                             <option value="">-- Select Option --</option>
                             {field.optionsJson &&
@@ -424,7 +506,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                             name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
-                            className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className={`w-full px-3 py-2 text-sm bg-white border rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:outline-none transition-colors ${
+                              field.required && !isFilled ? 'border-amber-300' : 'border-slate-300'
+                            }`}
                           />
                         ) : field.dataType === 'NUMBER' ? (
                           <input
@@ -433,7 +517,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                             name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
-                            className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className={`w-full px-3 py-2 text-sm bg-white border rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:outline-none transition-colors ${
+                              field.required && !isFilled ? 'border-amber-300' : 'border-slate-300'
+                            }`}
                             placeholder="Enter number..."
                           />
                         ) : (
@@ -443,7 +529,9 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                             name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
-                            className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className={`w-full px-3 py-2 text-sm bg-white border rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:outline-none transition-colors ${
+                              field.required && !isFilled ? 'border-amber-300' : 'border-slate-300'
+                            }`}
                             placeholder={`Enter ${label}...`}
                           />
                         )}
@@ -591,6 +679,13 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {step === 2 && !isStep2Valid && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-[#B45309] bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>Fill all mandatory fields (*) to click Next</span>
+              </span>
+            )}
+
             {step === 2 && application && (
               <button
                 type="button"
@@ -607,15 +702,36 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
               step > 1 && (
                 <button
                   type="button"
+                  disabled={step === 2 && !isStep2Valid}
+                  title={
+                    step === 2 && !isStep2Valid
+                      ? `Mandatory fields remaining: ${unfilledMandatoryFields.map((f) => f.labelEn).join(', ')}`
+                      : 'Proceed to Next Step'
+                  }
                   onClick={async () => {
-                    if (step === 2 && application) {
-                      await handleSaveDraft();
+                    if (step === 2) {
+                      if (!isStep2Valid) {
+                        setError(
+                          `Please fill in all mandatory fields before clicking Next: ${unfilledMandatoryFields
+                            .map((f) => f.labelEn)
+                            .join(', ')}`
+                        );
+                        return;
+                      }
+                      if (application) {
+                        await handleSaveDraft();
+                      }
                     }
+                    setError(null);
                     setStep((prev) => Math.min(prev + 1, 5));
                   }}
-                  className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold rounded-xl text-xs shadow transition-colors flex items-center gap-1.5"
+                  className={`px-5 py-2 rounded-xl text-xs font-semibold shadow transition-all flex items-center gap-1.5 ${
+                    step === 2 && !isStep2Valid
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none border border-slate-300'
+                      : 'bg-[#2563EB] hover:bg-[#1D4ED8] text-white active:scale-[0.99]'
+                  }`}
                 >
-                  <span>Continue</span>
+                  <span>Next</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )
