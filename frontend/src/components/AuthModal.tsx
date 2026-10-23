@@ -65,13 +65,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-modal-title"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-100 overflow-hidden">
         {/* Header */}
         <div className="bg-slate-900 text-white p-6 relative">
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close modal"
             className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -79,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center mb-3">
             <Lock className="w-5 h-5 text-white" />
           </div>
-          <h2 className="text-xl font-bold">
+          <h2 id="auth-modal-title" className="text-xl font-bold">
             {mode === 'login' ? 'Citizen Sign In' : 'Create Citizen Account'}
           </h2>
           <p className="text-xs text-slate-400 mt-1">
@@ -125,13 +131,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {mode === 'register' && (
             <>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="auth-fullname" className="block text-xs font-semibold text-slate-700 mb-1">
                   Full Legal Name (as per ID)
                 </label>
                 <div className="relative">
                   <UserIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
                     type="text"
+                    id="auth-fullname"
+                    name="fullName"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -142,13 +150,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="auth-phone" className="block text-xs font-semibold text-slate-700 mb-1">
                   Phone Number
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
                     type="tel"
+                    id="auth-phone"
+                    name="phoneNumber"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="+91 98765 43210"
@@ -160,13 +170,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="auth-email" className="block text-xs font-semibold text-slate-700 mb-1">
               Email Address
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="email"
+                id="auth-email"
+                name="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -177,13 +189,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label htmlFor="auth-password" className="block text-xs font-semibold text-slate-700 mb-1">
               Password
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="password"
+                id="auth-password"
+                name="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

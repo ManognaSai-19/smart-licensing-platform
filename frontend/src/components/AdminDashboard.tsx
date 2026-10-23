@@ -633,20 +633,31 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Create Service Modal */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="provision-modal-title"
+        >
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="text-lg font-bold text-slate-900">Provision New Service</h3>
-              <button onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <h3 id="provision-modal-title" className="text-lg font-bold text-slate-900">Provision New Service</h3>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                aria-label="Close provision modal"
+                className="text-slate-400 hover:text-slate-600"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateService} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Code</label>
+                <label htmlFor="srv-code" className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Code</label>
                 <input
                   type="text"
+                  id="srv-code"
+                  name="code"
                   required
                   placeholder="e.g. SRV_PROPERTY_TAX"
                   value={newService.code}
@@ -656,9 +667,11 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Name</label>
+                <label htmlFor="srv-name" className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Name</label>
                 <input
                   type="text"
+                  id="srv-name"
+                  name="name"
                   required
                   placeholder="e.g. Property Tax Assessment License"
                   value={newService.name}
@@ -668,8 +681,10 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Department</label>
+                <label htmlFor="srv-dept" className="block text-xs font-bold text-slate-700 uppercase mb-1">Department</label>
                 <select
+                  id="srv-dept"
+                  name="departmentId"
                   value={newService.departmentId}
                   onChange={(e) => setNewService({ ...newService, departmentId: Number(e.target.value) })}
                   className="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white"
@@ -684,9 +699,11 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Fee (₹)</label>
+                  <label htmlFor="srv-fee" className="block text-xs font-bold text-slate-700 uppercase mb-1">Fee (₹)</label>
                   <input
                     type="number"
+                    id="srv-fee"
+                    name="sampleFee"
                     min="0"
                     value={newService.sampleFee}
                     onChange={(e) => setNewService({ ...newService, sampleFee: Number(e.target.value) })}
@@ -694,9 +711,11 @@ export const AdminDashboard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">SLA Days</label>
+                  <label htmlFor="srv-sla" className="block text-xs font-bold text-slate-700 uppercase mb-1">SLA Days</label>
                   <input
                     type="number"
+                    id="srv-sla"
+                    name="processingTimeDays"
                     min="1"
                     value={newService.processingTimeDays}
                     onChange={(e) => setNewService({ ...newService, processingTimeDays: Number(e.target.value) })}
@@ -706,8 +725,10 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+                <label htmlFor="srv-desc" className="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
                 <textarea
+                  id="srv-desc"
+                  name="description"
                   rows={2}
                   value={newService.description}
                   onChange={(e) => setNewService({ ...newService, description: e.target.value })}
@@ -737,13 +758,22 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Inspect Dossier Modal (Read-Only Admin View) */}
       {inspectedApp && (
-        <div className="fixed inset-0 z-50 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-inspect-title"
+        >
           <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b flex items-center justify-between bg-slate-50">
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 id="admin-inspect-title" className="text-base font-bold text-slate-900">
                 Admin Dossier Inspection: {inspectedApp.referenceNumber}
               </h3>
-              <button onClick={() => setInspectedApp(null)} className="text-slate-400 hover:text-slate-600">
+              <button
+                onClick={() => setInspectedApp(null)}
+                aria-label="Close inspection dialog"
+                className="text-slate-400 hover:text-slate-600"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>

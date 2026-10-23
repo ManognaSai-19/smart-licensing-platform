@@ -166,7 +166,12 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="wizard-title"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95">
         {/* Wizard Header */}
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
@@ -176,7 +181,7 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold">
+                <h2 id="wizard-title" className="text-base font-bold">
                   {existingApplication ? 'Continue Application' : 'New Digital Application'}
                 </h2>
                 {application?.referenceNumber && (
@@ -375,7 +380,10 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2"
                       >
                         <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                          <label
+                            htmlFor={field.fieldKey}
+                            className="text-xs font-bold text-slate-800 flex items-center gap-1"
+                          >
                             <span>{label}</span>
                             {field.required && <span className="text-red-500">*</span>}
                           </label>
@@ -395,6 +403,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
 
                         {field.dataType === 'SELECT' ? (
                           <select
+                            id={field.fieldKey}
+                            name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
                             className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -410,6 +420,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         ) : field.dataType === 'DATE' ? (
                           <input
                             type="date"
+                            id={field.fieldKey}
+                            name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
                             className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -417,6 +429,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         ) : field.dataType === 'NUMBER' ? (
                           <input
                             type="number"
+                            id={field.fieldKey}
+                            name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
                             className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -425,6 +439,8 @@ export const ApplicationWizard: React.FC<ApplicationWizardProps> = ({
                         ) : (
                           <input
                             type="text"
+                            id={field.fieldKey}
+                            name={field.fieldKey}
                             value={val}
                             onChange={(e) => handleFieldChange(field.fieldKey, e.target.value)}
                             className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"

@@ -90,7 +90,12 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dossier-modal-title"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95">
         {/* Header */}
         <div className="p-6 bg-slate-900 text-white flex items-start justify-between">
@@ -101,7 +106,7 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
               </span>
               {app && getStatusBadge(app.status)}
             </div>
-            <h2 className="text-xl font-bold text-white">
+            <h2 id="dossier-modal-title" className="text-xl font-bold text-white">
               {app?.serviceName || 'Application Dossier'}
             </h2>
             <p className="text-xs text-slate-400 flex items-center gap-2 mt-1">
@@ -120,6 +125,7 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
               type="button"
               onClick={loadDetails}
               title="Refresh dossier"
+              aria-label="Refresh dossier"
               className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -127,6 +133,8 @@ export const ApplicationDetailView: React.FC<ApplicationDetailViewProps> = ({
             <button
               type="button"
               onClick={onClose}
+              title="Close dossier"
+              aria-label="Close dossier"
               className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />

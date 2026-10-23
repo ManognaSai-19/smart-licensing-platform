@@ -347,14 +347,19 @@ export const OfficerDashboard: React.FC = () => {
 
       {/* Dossier Inspection Modal / Slide-over */}
       {selectedAppId && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900 bg-opacity-50 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-slate-900 bg-opacity-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="officer-dossier-title"
+        >
           <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-3">
                 <FileText className="w-5 h-5 text-indigo-600" />
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 id="officer-dossier-title" className="text-lg font-bold text-slate-900">
                     Application Dossier: {dossier?.referenceNumber || `ID #${selectedAppId}`}
                   </h3>
                   <p className="text-xs text-slate-500">
@@ -584,10 +589,15 @@ export const OfficerDashboard: React.FC = () => {
 
       {/* Decision Confirmation / Reason Modal */}
       {decisionModalMode && (
-        <div className="fixed inset-0 z-60 overflow-y-auto bg-slate-900 bg-opacity-60 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-60 overflow-y-auto bg-slate-900 bg-opacity-60 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="decision-modal-title"
+        >
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h3 id="decision-modal-title" className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 {decisionModalMode === 'APPROVE' ? (
                   <>
                     <CheckCircle2 className="w-5 h-5 text-emerald-600" /> Confirm Approval
@@ -600,6 +610,7 @@ export const OfficerDashboard: React.FC = () => {
               </h3>
               <button
                 onClick={() => setDecisionModalMode(null)}
+                aria-label="Close decision dialog"
                 className="text-slate-400 hover:text-slate-600"
               >
                 <X className="w-5 h-5" />
@@ -614,10 +625,15 @@ export const OfficerDashboard: React.FC = () => {
 
             {decisionModalMode === 'REJECT' && (
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                <label
+                  htmlFor="officer-rejection-reason"
+                  className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                >
                   Rejection Reason <span className="text-rose-600">* Required</span>
                 </label>
                 <textarea
+                  id="officer-rejection-reason"
+                  name="rejectionReason"
                   rows={3}
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
@@ -628,10 +644,15 @@ export const OfficerDashboard: React.FC = () => {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              <label
+                htmlFor="officer-decision-notes"
+                className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >
                 Internal Notes <span className="text-slate-400 font-normal">(Optional)</span>
               </label>
               <textarea
+                id="officer-decision-notes"
+                name="internalNotes"
                 rows={2}
                 value={decisionNotes}
                 onChange={(e) => setDecisionNotes(e.target.value)}
