@@ -3,8 +3,8 @@
 ## Project Overview
 - **Title**: Smart Digital Licensing Platform
 - **Subtitle**: A Voice-First, Explainable AI Framework for Accessible Digital Applications and Intelligent Document Pre-Screening
-- **Current Phase**: Phase 8 (Voice-First Multilingual Assistance)
-- **Status**: Completed Phase 8 implementation, Web Speech API progressive enhancement (STT & TTS), bilingual Telugu & English speech guidance, spoken normalization engine (numbers, Telugu numerals, dates, select options, confirmation intents), audio read-back confirmation, research interaction telemetry, interactive voice wizard modal, playground dashboard, and full test suite (81/81 automated tests passing with 0 failures, 9 in Phase 8); awaiting user approval to proceed to Phase 9.
+- **Current Phase**: Phase 9 (Citizen User Interface)
+- **Status**: Completed Phase 9 implementation, full Citizen Dashboard, JWT reactive authentication context, 5-step guided digital application wizard (Service selection, dynamic schema form with inline/hands-free voice input, private document upload checklist with magic-byte validation, explainable AI pre-screening findings review, and final submission with declaration), application dossier details view with lifecycle audit timeline and rejection resubmission action, and verified full production build (`dist/assets/index-CEUgjYvi.js` 279.38 kB, `dist/assets/index-B1mncCp6.css` 42.94 kB); 81/81 automated backend tests passing across 8 test suites; awaiting user approval to proceed to Phase 10.
 
 ---
 
@@ -20,8 +20,9 @@
 | **Phase 5** | Application Workflow & Lifecycle | **COMPLETED & APPROVED** | Draft persistence, schema-driven form validation, state transitions (DRAFT -> SUBMITTED -> UNDER_VERIFICATION -> APPROVED/REJECTED -> RESUBMITTED), IDOR enforcement, department queues, audit log tracking. 49/49 automated tests passing. |
 | **Phase 6** | Private Document Management | **COMPLETED & APPROVED** | Private disk storage with UUID keys, binary magic-byte verification (PDF, JPEG, PNG), MIME/size checks, SHA-256 integrity checksums, IDOR defense, department boundary streaming, replacement/deletion, dynamic checklist status API, React upload component. 64/64 automated tests passing. |
 | **Phase 7** | OCR & Explainable Pre-Screening | **COMPLETED & APPROVED** | Pluggable OCR engine, confidence scoring, 5 explainable evaluation rule groups (Completeness, Format, Levenshtein name match, DOB/ID verification, Scan Uncertainty flags), interactive findings UI with diff comparison. 72/72 automated tests passing. |
-| **Phase 8** | Voice-First Multilingual Assistance | **READY FOR APPROVAL** | Web Speech API STT/TTS, bilingual guidance (English/Telugu), spoken normalization engine, audio read-back confirmation, privacy-by-design telemetry, voice wizard modal, normalization playground, live research stats. 81/81 automated tests passing. |
-| **Phase 9** | Citizen User Interface | PENDING | Awaiting Phase 8 approval. |
+| **Phase 8** | Voice-First Multilingual Assistance | **COMPLETED & APPROVED** | Web Speech API STT/TTS, bilingual guidance (English/Telugu), spoken normalization engine, audio read-back confirmation, privacy-by-design telemetry, voice wizard modal, normalization playground, live research stats. 81/81 automated tests passing. |
+| **Phase 9** | Citizen User Interface | **READY FOR APPROVAL** | Citizen dashboard, reactive JWT AuthContext, AuthModal, 5-step ApplicationWizard (Service, Voice/Form, Docs, Pre-Screening, Submit), ApplicationDetailView with audit history & resubmit workflow, verified production build. |
+| **Phase 10** | Officer & Admin Dashboards | PENDING | - |
 | **Phase 10** | Officer & Admin Dashboards | PENDING | - |
 | **Phase 11** | Security, Accessibility & Regression | PENDING | - |
 | **Phase 12** | Research Evaluation & Documentation | PENDING | - |
@@ -334,5 +335,66 @@
 
 ---
 
+## Phase 9 Implementation & Verification Evidence
+
+### 1. Artifacts Created & Configured
+- **Authentication & Application Types & REST Clients**:
+  - `frontend/src/types/auth.ts`: TypeScript contracts for `Role`, `User`, `LoginRequest`, `RegisterRequest`, and `AuthResponse`.
+  - `frontend/src/types/application.ts`: TypeScript contracts for `ApplicationStatus` (`DRAFT`, `SUBMITTED`, `UNDER_VERIFICATION`, `APPROVED`, `REJECTED`, `RESUBMITTED`), `ApplicationSummary`, `ApplicationDetail`, `ApplicationStatusHistory`, and `ReviewDecision`.
+  - `frontend/src/services/authApi.ts`: Type-safe REST client for citizen login, registration, token persistence in `localStorage`, and session management.
+  - `frontend/src/services/applicationApi.ts`: Type-safe REST client for draft creation, updating, retrieval, final submission, and resubmission.
+  - `frontend/src/context/AuthContext.tsx`: React Context provider supplying `user`, `token`, `login`, `register`, `logout`, and `isAuthenticated` across the entire application.
+- **Citizen Portal UI Components**:
+  - `frontend/src/components/AuthModal.tsx`: Secure citizen sign-in and registration modal with input validation, error banners, and demo citizen credential filler (`citizen.tester@example.com`).
+  - `frontend/src/components/CitizenDashboard.tsx`:
+    - Guest welcome state explaining voice assistance, pre-screening verification, and transparent tracking.
+    - Authenticated citizen view with personal greeting, role badge, and 5 metric counters (Total, In Draft, Under Verification, Approved, Action Needed).
+    - Applications list with search by reference number / service name, and status dropdown filter (`ALL`, `DRAFT`, `SUBMITTED`, `UNDER_VERIFICATION`, `APPROVED`, `REJECTED`).
+    - Context-aware action buttons: "Continue Draft" for drafts, "Action Required / Resubmit" for rejected applications, and "View Dossier" for live inspection.
+  - `frontend/src/components/ApplicationWizard.tsx`:
+    - Complete 5-step guided digital application portal:
+      - **Step 1: Select Service**: Service cards with fee, SLA days, department name, and "Apply Now" triggers calling `POST /api/applications` to initialize a draft.
+      - **Step 2: Application Form**: Dynamic schema rendering (`TEXT`, `NUMBER`, `DATE`, `SELECT`), bilingual English/Telugu labels, inline `VoiceInputButton` on every field, "Launch Voice Assistant Wizard" trigger banner, validation rule display, and draft saving (`PUT /api/applications/{id}/draft`).
+      - **Step 3: Upload Documents**: Integrates `DocumentUploadSection.tsx` with dynamic checklist, binary magic-byte verification, and private streaming preview.
+      - **Step 4: Pre-Screening**: Integrates `PrescreeningFindingsView.tsx` with 1-click OCR extraction & rule evaluation, expected vs. extracted diffs, and corrective advice.
+      - **Step 5: Review & Submit**: Comprehensive review card, citizen legal declaration checkbox, final submission (`POST /api/applications/{id}/submit` or `/resubmit`), and success modal displaying reference number (`APP-YYYYMMDD-XXXXX`).
+  - `frontend/src/components/ApplicationDetailView.tsx`:
+    - Full application dossier modal with reference number, status badge, service metadata, and refresh button.
+    - Officer rejection alert banner displaying official reason and notes, with 1-click "Update Fields & Resubmit" button.
+    - Two-tab layout: Application Form Data & Document Status vs. Complete Lifecycle Audit Timeline with transition history and actor attribution.
+  - `frontend/src/App.tsx`:
+    - Updated navigation with 4 primary tabs: **Citizen Portal**, **Service Catalogue**, **Voice Assistant**, and **System Health**.
+    - User authentication pill in the top header showing citizen name and 1-click sign-out.
+
+### 2. Automated Test & Build Execution Evidence
+- Frontend Production Build:
+  - Command: `$env:NODE_OPTIONS = "--use-system-ca"; npm run build`
+  - Result:
+    ```
+    vite v5.4.21 building for production...
+    transforming...
+    ✓ 1589 modules transformed.
+    rendering chunks...
+    computing gzip size...
+    dist/index.html                   0.48 kB │ gzip:  0.31 kB
+    dist/assets/index-B1mncCp6.css   42.94 kB │ gzip:  7.95 kB
+    dist/assets/index-CEUgjYvi.js   279.38 kB │ gzip: 75.92 kB
+    ✓ built in 15.43s
+    ```
+  - Zero TypeScript compiler errors; clean production bundle generated.
+- Backend Test Suite:
+  - Command: `backend/mvnw.cmd test`
+  - Result:
+    ```
+    [INFO] Tests run: 81, Failures: 0, Errors: 0, Skipped: 0
+    [INFO] BUILD SUCCESS (Total time: 01:09 min)
+    ```
+  - All 81 automated tests passing across 8 test suites with 0 regressions.
+- Live End-to-End Server Health:
+  - Frontend dev server running on `http://localhost:5173` (HTTP 200 OK).
+  - Backend Spring Boot server running on `http://localhost:8080` (HTTP 200 UP).
+
+---
+
 ## Next Action
-Wait for user review and explicit approval ("ok") of Phase 8 before proceeding to Phase 9 (Citizen User Interface).
+Wait for user review and explicit approval ("ok") of Phase 9 before proceeding to Phase 10 (Officer & Admin Dashboards).
