@@ -11,10 +11,15 @@ export interface User {
 }
 
 export interface AuthResponse {
-  accessToken: string;
+  token?: string;
+  accessToken?: string;
   tokenType: string;
-  expiresIn: number;
-  user: User;
+  expiresIn?: number;
+  userId?: number;
+  email?: string;
+  fullName?: string;
+  role?: Role;
+  user?: User;
 }
 
 export interface LoginRequest {

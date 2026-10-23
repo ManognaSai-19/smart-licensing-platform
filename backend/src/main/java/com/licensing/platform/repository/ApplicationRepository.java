@@ -28,6 +28,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     boolean existsByReferenceNumber(String referenceNumber);
 
+    long countByStatus(ApplicationStatus status);
+
     @Query("SELECT a FROM Application a WHERE (:status IS NULL OR a.status = :status) " +
            "AND (:departmentId IS NULL OR a.service.department.id = :departmentId) " +
            "AND (:query IS NULL OR LOWER(a.referenceNumber) LIKE LOWER(CONCAT('%', :query, '%')) " +

@@ -40,14 +40,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (req: LoginRequest) => {
     const res = await authApi.login(req);
-    setUser(res.user);
-    setToken(res.accessToken);
+    setUser(res.user ?? null);
+    setToken(res.token || res.accessToken || null);
   };
 
   const register = async (req: RegisterRequest) => {
     const res = await authApi.register(req);
-    setUser(res.user);
-    setToken(res.accessToken);
+    setUser(res.user ?? null);
+    setToken(res.token || res.accessToken || null);
   };
 
   const logout = async () => {

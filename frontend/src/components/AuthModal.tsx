@@ -46,11 +46,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleFillDemoCitizen = () => {
-    setEmail('citizen.tester@example.com');
-    setPassword('Password123!');
-    setFullName('Ramesh Kumar');
-    setPhoneNumber('+919876543210');
+  const handleFillDemo = (type: 'citizen' | 'transport' | 'municipal' | 'admin') => {
+    setMode('login');
+    setError(null);
+    if (type === 'citizen') {
+      setEmail('citizen.tester@licensing.gov.in');
+      setPassword('Citizen@123');
+    } else if (type === 'transport') {
+      setEmail('officer.transport@licensing.gov.in');
+      setPassword('Officer@123');
+    } else if (type === 'municipal') {
+      setEmail('officer.municipal@licensing.gov.in');
+      setPassword('Officer@123');
+    } else if (type === 'admin') {
+      setEmail('admin@licensing.gov.in');
+      setPassword('Admin@123');
+    }
   };
 
   return (
@@ -190,17 +201,43 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {submitting ? 'Authenticating...' : mode === 'login' ? 'Sign In →' : 'Create Account →'}
           </button>
 
-          {/* Demo Helper Button */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-400">Quick Demo Testing:</span>
-            <button
-              type="button"
-              onClick={handleFillDemoCitizen}
-              className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Fill Citizen Demo</span>
-            </button>
+          {/* Demo Helper Buttons */}
+          <div className="pt-3 border-t border-slate-100 space-y-1.5">
+            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Quick Demo Logins:</span>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => handleFillDemo('citizen')}
+                className="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium text-left flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Citizen</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('transport')}
+                className="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium text-left flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Transport Officer</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('municipal')}
+                className="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium text-left flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
+                <span>Municipal Officer</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleFillDemo('admin')}
+                className="px-2 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium text-left flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
+                <span>Platform Admin</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

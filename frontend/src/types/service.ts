@@ -51,3 +51,22 @@ export interface ServiceDetail extends ServiceSummary {
   fields: ServiceField[];
   requiredDocuments: RequiredDocumentType[];
 }
+
+export interface ServiceCreateRequest {
+  code: string;
+  name: string;
+  description?: string;
+  departmentId: number;
+  sampleFee: number;
+  processingTimeDays: number;
+  active?: boolean;
+}
+
+export interface ServiceUpdateRequest {
+  name: string;
+  description?: string;
+  departmentId: number;
+  sampleFee: number;
+  processingTimeDays: number;
+  active?: boolean;
+}

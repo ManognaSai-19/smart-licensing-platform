@@ -12,10 +12,14 @@ import {
   AlertTriangle,
   LogIn,
   LogOut,
+  UserCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import { ServiceCatalogue } from './components/ServiceCatalogue';
 import { VoiceDashboard } from './components/VoiceDashboard';
 import { CitizenDashboard } from './components/CitizenDashboard';
+import { OfficerDashboard } from './components/OfficerDashboard';
+import { AdminDashboard } from './components/AdminDashboard';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
 
@@ -35,13 +39,24 @@ interface HealthData {
 
 function MainApp() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'citizen' | 'catalogue' | 'voice' | 'health'>('citizen');
+  const [activeTab, setActiveTab] = useState<'citizen' | 'officer' | 'admin' | 'catalogue' | 'voice' | 'health'>('citizen');
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const [lastChecked, setLastChecked] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
+  // Auto-route tabs based on user role upon login
+  useEffect(() => {
+    if (user?.role === 'OFFICER') {
+      setActiveTab('officer');
+    } else if (user?.role === 'ADMIN') {
+      setActiveTab('admin');
+    } else if (user?.role === 'CITIZEN') {
+      setActiveTab('citizen');
+    }
+  }, [user?.role]);
 
   const fetchHealth = async () => {
     setLoading(true);
@@ -101,18 +116,51 @@ function MainApp() {
           <div className="flex items-center gap-3">
             {/* Navigation Tabs */}
             <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto">
-              <button
-                type="button"
-                onClick={() => setActiveTab('citizen')}
-                className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                  activeTab === 'citizen'
-                    ? 'bg-white text-indigo-700 shadow-sm font-bold'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Citizen Portal</span>
-              </button>
+              {(user?.role === 'CITIZEN' || !user || user?.role === 'ADMIN') && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('citizen')}
+                  className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    activeTab === 'citizen'
+                      ? 'bg-white text-indigo-700 shadow-sm font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  <span>Citizen Portal</span>
+                </button>
+              )}
+
+              {(user?.role === 'OFFICER' || user?.role === 'ADMIN') && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('officer')}
+                  className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    activeTab === 'officer'
+                      ? 'bg-white text-indigo-700 shadow-sm font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <UserCheck className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Officer Queue</span>
+                </button>
+              )}
+
+              {user?.role === 'ADMIN' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('admin')}
+                  className={`flex items-center space-x-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    activeTab === 'admin'
+                      ? 'bg-white text-purple-700 shadow-sm font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Admin Control</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setActiveTab('catalogue')}
@@ -183,6 +231,10 @@ function MainApp() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'citizen' ? (
           <CitizenDashboard />
+        ) : activeTab === 'officer' ? (
+          <OfficerDashboard />
+        ) : activeTab === 'admin' ? (
+          <AdminDashboard />
         ) : activeTab === 'catalogue' ? (
           <ServiceCatalogue />
         ) : activeTab === 'voice' ? (

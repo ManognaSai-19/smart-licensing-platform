@@ -45,9 +45,16 @@ export const authApi = {
     }
 
     const data: AuthResponse = await res.json();
-    this.setToken(data.accessToken);
-    this.setUser(data.user);
-    return data;
+    const token = data.token || data.accessToken || '';
+    const user: User = data.user || {
+      id: data.userId || 0,
+      email: data.email || request.email,
+      fullName: data.fullName || '',
+      role: data.role || 'CITIZEN',
+    };
+    if (token) this.setToken(token);
+    if (user) this.setUser(user);
+    return { ...data, user, token, accessToken: token };
   },
 
   async register(request: RegisterRequest): Promise<AuthResponse> {
@@ -63,9 +70,16 @@ export const authApi = {
     }
 
     const data: AuthResponse = await res.json();
-    this.setToken(data.accessToken);
-    this.setUser(data.user);
-    return data;
+    const token = data.token || data.accessToken || '';
+    const user: User = data.user || {
+      id: data.userId || 0,
+      email: data.email || request.email,
+      fullName: data.fullName || request.fullName,
+      role: data.role || 'CITIZEN',
+    };
+    if (token) this.setToken(token);
+    if (user) this.setUser(user);
+    return { ...data, user, token, accessToken: token };
   },
 
   async getCurrentUser(): Promise<User> {
