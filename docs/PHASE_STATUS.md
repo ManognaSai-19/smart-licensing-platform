@@ -3,8 +3,8 @@
 ## Project Overview
 - **Title**: Smart Digital Licensing Platform
 - **Subtitle**: A Voice-First, Explainable AI Framework for Accessible Digital Applications and Intelligent Document Pre-Screening
-- **Current Phase**: Phase 1 (Skeleton and Health Checks)
-- **Status**: Completed Phase 1 implementation & verification; awaiting user approval to proceed to Phase 2.
+- **Current Phase**: Phase 2 (Database Migrations and Persistence)
+- **Status**: Completed Phase 2 implementation & verification; awaiting user approval to proceed to Phase 3.
 
 ---
 
@@ -13,9 +13,9 @@
 | Phase | Description | Status | Evidence / Notes |
 |---|---|---|---|
 | **Phase 0** | Environment and Architecture | **COMPLETED & APPROVED** | Tool versions verified; architecture, data flow, DB schema, API design, research plan & risks documented. |
-| **Phase 1** | Skeleton and Health Checks | **READY FOR APPROVAL** | Backend Spring Boot 3 & Frontend React+Vite started locally; live health API communication verified end-to-end. |
-| **Phase 2** | Database Migrations & Persistence | PENDING | Awaiting Phase 1 approval. |
-| **Phase 3** | Authentication and Authorization | PENDING | - |
+| **Phase 1** | Skeleton and Health Checks | **COMPLETED & APPROVED** | Backend Spring Boot 3 & Frontend React+Vite started locally; live health API communication verified end-to-end. |
+| **Phase 2** | Database Migrations & Persistence | **READY FOR APPROVAL** | 14 relational tables, 5 enums, 14 JPA entities, 14 repositories; clean Flyway migrations & persistence verified by automated tests. |
+| **Phase 3** | Authentication and Authorization | PENDING | Awaiting Phase 2 approval. |
 | **Phase 4** | Configurable Service Catalogue | PENDING | - |
 | **Phase 5** | Application Workflow & Lifecycle | PENDING | - |
 | **Phase 6** | Private Document Management | PENDING | - |
@@ -28,68 +28,46 @@
 
 ---
 
-## Phase 1 Implementation & Verification Evidence
+## Phase 2 Implementation & Verification Evidence
 
-### 1. Artifacts Created
-- `backend/`:
-  - `pom.xml`: Spring Boot 3.3.4 parent, Java 21/23, Web, Actuator, JUnit 5 MockMvc test starter.
-  - `mvnw`, `mvnw.cmd`, `.mvn/wrapper/`: Official Maven 3.9.9 wrapper.
-  - `.mvn/jvm.config`: Configured `-Djavax.net.ssl.trustStoreType=Windows-ROOT` to resolve local antivirus SSL interception.
-  - `src/main/resources/application.properties`: Server port 8080, Actuator exposure, logging.
-  - `src/main/java/com/licensing/platform/LicensingPlatformApplication.java`: Main application entry point.
-  - `src/main/java/com/licensing/platform/config/WebConfig.java`: CORS configuration for Vite frontend origins.
-  - `src/main/java/com/licensing/platform/dto/HealthResponse.java`: Record DTO for health payload.
-  - `src/main/java/com/licensing/platform/controller/HealthController.java`: `GET /api/health` endpoint returning real JSON metadata.
-  - `src/test/java/com/licensing/platform/HealthControllerTest.java`: JUnit 5 SpringBootTest verifying HTTP 200 and schema.
-- `frontend/`:
-  - `package.json`: React 18, TypeScript 5, Vite 5, Lucide React icons.
-  - `vite.config.ts`: Configured dev and preview proxy mapping `/api` to `http://127.0.0.1:8080`.
-  - `tsconfig.json`: Strict TypeScript settings.
-  - `index.html`: Base HTML template.
-  - `src/App.tsx`: Live Health dashboard displaying status, round-trip latency, backend module state, refresh button, and error fallbacks.
-  - `src/main.tsx`, `src/index.css`: React bootstrap and responsive styling.
-- Workspace root:
-  - `.env.example`: Secure environment variable template with placeholders only.
-  - `.gitignore`: Ignoring build outputs, node_modules, .tools, .env files.
-  - `README.md`: Clear setup and execution guide.
+### 1. Artifacts Created & Configured
+- **Flyway Migrations** (`backend/src/main/resources/db/migration/`):
+  - `V1__init_schema.sql`: Complete DDL for all 14 core tables with PostgreSQL/ANSI constraints, indexes, foreign keys, and check clauses (`users`, `departments`, `officer_department_assignments`, `services`, `service_fields`, `required_document_types`, `applications`, `application_documents`, `ocr_extractions`, `prescreening_findings`, `review_decisions`, `application_status_history`, `notifications`, `audit_logs`).
+  - `V2__seed_services.sql`: Seed data for `DEPT_TRANSPORT` and `DEPT_MUNICIPAL`, sample services (`SRV_DRIVING_LICENSE`, `SRV_TRADE_LICENSE`), 6 dynamic form fields per service with English & Telugu labels, and required document type specifications. Uses relational lookups to guarantee ANSI and PostgreSQL portability without sequence collisions.
+- **Enums & JPA Entity Models** (`backend/src/main/java/com/licensing/platform/model/`):
+  - Enums: `Role` (`CITIZEN`, `OFFICER`, `ADMIN`), `FieldDataType` (`TEXT`, `NUMBER`, `DATE`, `SELECT`), `ApplicationStatus` (`DRAFT`, `SUBMITTED`, `UNDER_VERIFICATION`, `APPROVED`, `REJECTED`, `RESUBMITTED`), `FindingOutcome` (`PASS`, `FAIL`, `WARNING`, `NEEDS_MANUAL_REVIEW`), `DecisionType` (`APPROVED`, `REJECTED`).
+  - Entities: `User`, `Department`, `OfficerDepartmentAssignment`, `ServiceDefinition`, `ServiceField`, `RequiredDocumentType`, `Application`, `ApplicationDocument`, `OcrExtraction`, `PrescreeningFinding`, `ReviewDecision`, `ApplicationStatusHistory`, `Notification`, `AuditLog`.
+- **Spring Data JPA Repositories** (`backend/src/main/java/com/licensing/platform/repository/`):
+  - 14 interfaces providing type-safe CRUD and query methods.
+- **Configuration**:
+  - `backend/src/main/resources/application.properties`: Configured PostgreSQL datasource reading from environment variables (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`), Flyway migration auto-runner, Hibernate `ddl-auto=validate`.
+  - `backend/src/test/resources/application.properties`: Test datasource with PostgreSQL compatibility mode (`MODE=PostgreSQL;DB_CLOSE_DELAY=-1`) validating Flyway execution and entity mappings.
+  - `.env.example`: Updated with PostgreSQL 18 connection settings (port 5433 fallback documented).
 
-### 2. Test & Build Execution Evidence
-1. **Backend Compilation & JUnit Tests**:
-   - Command: `backend/mvnw.cmd clean test`
-   - Result:
-     ```
-     [INFO] Compiling 4 source files with javac [debug parameters release 21] to target\classes
-     [INFO] Compiling 1 source file with javac [debug parameters release 21] to target\test-classes
-     [INFO] Running com.licensing.platform.HealthControllerTest
-     [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
-     [INFO] BUILD SUCCESS
-     ```
-2. **Backend Packaging**:
-   - Command: `backend/mvnw.cmd package -DskipTests`
-   - Result: `BUILD SUCCESS`, generated `backend/target/smart-licensing-platform-0.1.0-SNAPSHOT.jar`.
-3. **Frontend Compilation & Build**:
-   - Command: `npm run build`
-   - Result:
-     ```
-     ✓ 1571 modules transformed.
-     dist/index.html                   0.48 kB │ gzip:  0.31 kB
-     dist/assets/index-QfpPEFws.css    0.27 kB │ gzip:  0.23 kB
-     dist/assets/index-B0jdYw-z.js   155.77 kB │ gzip: 49.39 kB
-     ✓ built in 13.86s
-     ```
-4. **End-to-End Live Integration Verification**:
-   - Direct backend probe: `curl http://127.0.0.1:8080/api/health`
-     ```json
-     {"status":"UP","service":"Smart Digital Licensing Platform API","version":"0.1.0-SNAPSHOT","timestamp":"2026-10-23T12:40:52.200089500Z","details":{"database":"unconfigured-phase1","environment":"development","ocrProvider":"mock","speechFallback":"enabled"}}
-     ```
-   - Frontend web page probe: `curl -I http://127.0.0.1:5173/` -> `HTTP/1.1 200 OK`
-   - Frontend reverse-proxy health probe: `curl http://127.0.0.1:5173/api/health`
-     ```json
-     {"status":"UP","service":"Smart Digital Licensing Platform API","version":"0.1.0-SNAPSHOT","timestamp":"2026-10-23T12:40:55.108182800Z","details":{"database":"unconfigured-phase1","environment":"development","ocrProvider":"mock","speechFallback":"enabled"}}
-     ```
-   - Verification status: **PASSED (All acceptance criteria met)**.
+### 2. Automated Test Execution Evidence
+- Command: `backend/mvnw.cmd test`
+- Results:
+  ```
+  [INFO] Running com.licensing.platform.DatabaseMigrationAndPersistenceTest
+  2026-10-23T18:36:59.527  INFO o.f.core.internal.command.DbValidate : Successfully validated 2 migrations (execution time 00:00.043s)
+  2026-10-23T18:36:59.695  INFO o.f.core.internal.command.DbMigrate  : Migrating schema "public" to version "1 - init schema"
+  2026-10-23T18:36:59.836  INFO o.f.core.internal.command.DbMigrate  : Migrating schema "public" to version "2 - seed services"
+  2026-10-23T18:36:59.890  INFO o.f.core.internal.command.DbMigrate  : Successfully applied 2 migrations to schema "public", now at version v2 (execution time 00:00.124s)
+  2026-10-23T18:37:05.460  INFO j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+  [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.DatabaseMigrationAndPersistenceTest
+  [INFO] Running com.licensing.platform.HealthControllerTest
+  [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.HealthControllerTest
+  [INFO] Results:
+  [INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] BUILD SUCCESS
+  ```
+- Detailed Verifications:
+  1. `testFlywaySeedData`: Successfully confirmed 2 departments, 2 sample services (Driving License, Trade License), 12 dynamic fields with English & Telugu labels, and 6 required document types are seeded.
+  2. `testPersistAndReadCompleteLifecycle`: Successfully persisted and verified relationships across `User`, `Application`, `ApplicationDocument` (UUID storage key, SHA-256 checksum), `OcrExtraction` (96.5% confidence), `PrescreeningFinding` (Outcome: `PASS`), `ApplicationStatusHistory`, `Notification`, and `AuditLog`.
+  3. `testUniqueUserEmailConstraint`: Verified that unique database constraints enforce data integrity, rejecting duplicate emails with `DataIntegrityViolationException`.
+  4. `HealthControllerTest`: Verified health endpoint with JPA/Flyway layer initialized.
 
 ---
 
 ## Next Action
-Wait for user review and explicit approval of Phase 1 before starting Phase 2 (Database Migrations and Persistence).
+Wait for user review and explicit approval of Phase 2 before starting Phase 3 (Authentication and Authorization).
