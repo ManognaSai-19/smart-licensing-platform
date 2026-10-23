@@ -61,6 +61,9 @@ class DatabaseMigrationAndPersistenceTest {
     @Autowired
     private AuditLogRepository auditLogRepository;
 
+    @Autowired
+    private VoiceInteractionLogRepository voiceInteractionLogRepository;
+
     @Test
     @DisplayName("Verify clean Flyway migrations seed sample services and departments")
     void testFlywaySeedData() {
@@ -143,6 +146,13 @@ class DatabaseMigrationAndPersistenceTest {
         AuditLog savedAudit = auditLogRepository.save(audit);
         assertThat(savedAudit.getId()).isNotNull();
 
+        // 10. Voice Telemetry Log
+        VoiceInteractionLog voiceLog = new VoiceInteractionLog(savedApp.getId(), "SRV_DRIVING_LICENSE", "fullName", "te-IN", "రమేష్ కుమార్", "Ramesh Kumar", 0.95, 3200, 1, true, "VOICE");
+        VoiceInteractionLog savedVoiceLog = voiceInteractionLogRepository.save(voiceLog);
+        assertThat(savedVoiceLog.getId()).isNotNull();
+        assertThat(savedVoiceLog.getFieldKey()).isEqualTo("fullName");
+        assertThat(savedVoiceLog.getLanguage()).isEqualTo("te-IN");
+
         // Read and verify relationships
         List<Application> citizenApps = applicationRepository.findByCitizenIdOrderByCreatedAtDesc(savedCitizen.getId());
         assertThat(citizenApps).hasSize(1);
@@ -151,6 +161,10 @@ class DatabaseMigrationAndPersistenceTest {
         List<PrescreeningFinding> findings = prescreeningFindingRepository.findByApplicationId(savedApp.getId());
         assertThat(findings).hasSize(1);
         assertThat(findings.get(0).getRuleCode()).isEqualTo("RULE_IDENTITY_MATCH");
+
+        List<VoiceInteractionLog> appVoiceLogs = voiceInteractionLogRepository.findByApplicationId(savedApp.getId());
+        assertThat(appVoiceLogs).hasSize(1);
+        assertThat(appVoiceLogs.get(0).getServiceCode()).isEqualTo("SRV_DRIVING_LICENSE");
     }
 
     @Test

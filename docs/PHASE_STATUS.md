@@ -3,8 +3,8 @@
 ## Project Overview
 - **Title**: Smart Digital Licensing Platform
 - **Subtitle**: A Voice-First, Explainable AI Framework for Accessible Digital Applications and Intelligent Document Pre-Screening
-- **Current Phase**: Phase 7 (OCR & Explainable Pre-Screening Engine)
-- **Status**: Completed Phase 7 implementation, pluggable OCR extraction engine, explainable rule engine (Completeness, Format, Levenshtein fuzzy match, Uncertainty/low quality flags), interactive findings dashboard, and full test suite (72/72 tests passing across all phases, 8 in Phase 7); awaiting user approval to proceed to Phase 8.
+- **Current Phase**: Phase 8 (Voice-First Multilingual Assistance)
+- **Status**: Completed Phase 8 implementation, Web Speech API progressive enhancement (STT & TTS), bilingual Telugu & English speech guidance, spoken normalization engine (numbers, Telugu numerals, dates, select options, confirmation intents), audio read-back confirmation, research interaction telemetry, interactive voice wizard modal, playground dashboard, and full test suite (81/81 automated tests passing with 0 failures, 9 in Phase 8); awaiting user approval to proceed to Phase 9.
 
 ---
 
@@ -19,9 +19,9 @@
 | **Phase 4** | Configurable Service Catalogue | **COMPLETED & APPROVED** | Dynamic JSON form schemas, multilingual Telugu/English definitions, public catalogue & admin mutation APIs, React interactive service catalogue. 37/37 automated tests passing. |
 | **Phase 5** | Application Workflow & Lifecycle | **COMPLETED & APPROVED** | Draft persistence, schema-driven form validation, state transitions (DRAFT -> SUBMITTED -> UNDER_VERIFICATION -> APPROVED/REJECTED -> RESUBMITTED), IDOR enforcement, department queues, audit log tracking. 49/49 automated tests passing. |
 | **Phase 6** | Private Document Management | **COMPLETED & APPROVED** | Private disk storage with UUID keys, binary magic-byte verification (PDF, JPEG, PNG), MIME/size checks, SHA-256 integrity checksums, IDOR defense, department boundary streaming, replacement/deletion, dynamic checklist status API, React upload component. 64/64 automated tests passing. |
-| **Phase 7** | OCR & Explainable Pre-Screening | **READY FOR APPROVAL** | Pluggable OCR engine, confidence scoring, 5 explainable evaluation rule groups (Completeness, Format, Levenshtein name match, DOB/ID verification, Scan Uncertainty flags), interactive findings UI with diff comparison. 72/72 automated tests passing. |
-| **Phase 8** | Voice-First Multilingual Assistance | PENDING | Awaiting Phase 7 approval. |
-| **Phase 9** | Citizen User Interface | PENDING | - |
+| **Phase 7** | OCR & Explainable Pre-Screening | **COMPLETED & APPROVED** | Pluggable OCR engine, confidence scoring, 5 explainable evaluation rule groups (Completeness, Format, Levenshtein name match, DOB/ID verification, Scan Uncertainty flags), interactive findings UI with diff comparison. 72/72 automated tests passing. |
+| **Phase 8** | Voice-First Multilingual Assistance | **READY FOR APPROVAL** | Web Speech API STT/TTS, bilingual guidance (English/Telugu), spoken normalization engine, audio read-back confirmation, privacy-by-design telemetry, voice wizard modal, normalization playground, live research stats. 81/81 automated tests passing. |
+| **Phase 9** | Citizen User Interface | PENDING | Awaiting Phase 8 approval. |
 | **Phase 10** | Officer & Admin Dashboards | PENDING | - |
 | **Phase 11** | Security, Accessibility & Regression | PENDING | - |
 | **Phase 12** | Research Evaluation & Documentation | PENDING | - |
@@ -254,5 +254,85 @@
 
 ---
 
+## Phase 8 Implementation & Verification Evidence
+
+### 1. Artifacts Created & Configured
+- **Flyway Migration & JPA Entity**:
+  - `backend/src/main/resources/db/migration/V3__voice_telemetry.sql`: Created `voice_interaction_logs` relational table storing interaction telemetry (application ID, service code, field key, language `te-IN`/`en-IN`, raw transcript, normalized value, confidence score, duration ms, correction count, user confirmation flag, and input mode `VOICE` vs `KEYBOARD_FALLBACK`).
+  - `backend/src/main/java/com/licensing/platform/model/VoiceInteractionLog.java`: JPA entity with indexes on service code, field key, and creation timestamp.
+  - `backend/src/main/java/com/licensing/platform/repository/VoiceInteractionLogRepository.java`: Custom repository queries for average confidence, average corrections, and language/input mode distributions.
+- **DTOs** (`backend/src/main/java/com/licensing/platform/dto/`):
+  - `VoicePromptDto.java`: Structured field guidance (field key, label, spoken prompt, spoken example, read-back confirmation template, options list, validation hint).
+  - `VoiceServiceGuidanceResponse.java`: Service-level guidance wrapper with welcome, completion, and error prompts.
+  - `VoiceNormalizationRequest.java` & `VoiceNormalizationResponse.java`: Spoken input payload with detected intent (`CONFIRM_YES`, `CONFIRM_NO`, `VALUE_INPUT`, `REPEAT`), normalized value, confidence score, and audio read-back text.
+  - `VoiceTelemetryRequest.java` & `VoiceTelemetryResponse.java`: Interaction tracking payload for research evaluation.
+  - `VoiceStatsResponse.java`: Aggregated usability metrics (total sessions, confirmation rate %, average confidence, average corrections, language breakdown, input mode breakdown).
+- **Service Layer** (`backend/src/main/java/com/licensing/platform/service/VoiceGuidanceService.java`):
+  - Multilingual guidance generator for all services (`SRV_DRIVING_LICENSE`, `SRV_TRADE_LICENSE`).
+  - Spoken normalization engine:
+    - Normalizes English words ("one two three four" -> `1234`) and Telugu words ("ఒకటి రెండు మూడు నాలుగు" -> `1234`).
+    - Normalizes Telugu Unicode digits (౦-౯ -> `0-9`).
+    - Normalizes spoken dates ("15th August 1995", "15 ఆగస్టు 1995" -> ISO `1995-08-15`).
+    - Normalizes SELECT options (e.g., "o positive" / "ఓ పాజిటివ్" -> `O+`, "motorcycle with gear" -> `Motorcycle with Gear (MCWG)`).
+    - Intent detection: detects spoken confirmations ("yes", "yeah", "అవును", "సరే" -> `CONFIRM_YES`; "no", "wrong", "కాదు", "తప్పు" -> `CONFIRM_NO`).
+  - Telemetry logging and statistical aggregation for research evaluation without storing raw voice recordings (privacy-by-design).
+- **Controller Layer** (`backend/src/main/java/com/licensing/platform/controller/VoiceController.java`):
+  - `GET /api/voice/prompts/{serviceCode}?lang=en|te` — Public multilingual prompt dictionary.
+  - `POST /api/voice/normalize` — Spoken speech transcript normalization & intent classifier.
+  - `POST /api/voice/telemetry` — Voice interaction logging.
+  - `GET /api/voice/telemetry/stats` — Usability & academic evaluation statistics.
+  - Configured in `SecurityConfig.java` to permit smooth applicant interaction without authentication barriers.
+- **Frontend Web Speech Architecture**:
+  - `frontend/src/types/voice.ts`: TypeScript contracts for voice prompts, normalization, and telemetry.
+  - `frontend/src/services/speechService.ts`: Progressive enhancement wrapper over Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition` and `SpeechSynthesis`). Features browser capability detection, Telugu (`te-IN`) and Indian English (`en-IN`) voice selection, interim result callbacks, speech rate/pitch control, and fallback handling.
+  - `frontend/src/services/voiceApi.ts`: Type-safe REST client for prompts, normalization, and telemetry.
+  - `frontend/src/components/VoiceInputButton.tsx`: Accessible single-field microphone trigger with animated listening pulse, live transcript preview, audio read-back confirmation, and keyboard fallback indicator.
+  - `frontend/src/components/VoiceAssistantModal.tsx`: Step-by-step guided voice form assistant with speech synthesis prompts, real-time waveform listening animation, audio read-back verification ("You said [X]. Is this correct?"), automatic field advancement, and language toggle.
+  - `frontend/src/components/VoiceDashboard.tsx`: Comprehensive voice interface tab in `App.tsx` featuring one-click assistant launch, audio test samples, interactive normalization playground, and live research telemetry dashboard.
+  - `frontend/src/components/ServiceCatalogue.tsx`: Embedded "Voice Apply (Guided)" triggers on service cards and per-field voice mic buttons in the schema inspector.
+
+### 2. Automated Test Execution Evidence
+- Command: `backend/mvnw.cmd test`
+- Results:
+  ```
+  [INFO] Running com.licensing.platform.ApplicationWorkflowTest
+  [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.ApplicationWorkflowTest
+  [INFO] Running com.licensing.platform.AuthenticationAndAuthorizationTest
+  [INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.AuthenticationAndAuthorizationTest
+  [INFO] Running com.licensing.platform.DatabaseMigrationAndPersistenceTest
+  [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.DatabaseMigrationAndPersistenceTest
+  [INFO] Running com.licensing.platform.DocumentManagementTest
+  [INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.DocumentManagementTest
+  [INFO] Running com.licensing.platform.HealthControllerTest
+  [INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.HealthControllerTest
+  [INFO] Running com.licensing.platform.PrescreeningAndOcrTest
+  [INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.PrescreeningAndOcrTest
+  [INFO] Running com.licensing.platform.ServiceCatalogueTest
+  [INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.ServiceCatalogueTest
+  [INFO] Running com.licensing.platform.VoiceGuidanceTest
+  [INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- in com.licensing.platform.VoiceGuidanceTest
+  [INFO] 
+  [INFO] Results:
+  [INFO] 
+  [INFO] Tests run: 81, Failures: 0, Errors: 0, Skipped: 0
+  [INFO] 
+  [INFO] BUILD SUCCESS
+  [INFO] Total time: 56.420 s
+  ```
+- Detailed Phase 8 Verifications in `VoiceGuidanceTest`:
+  1. `testGetVoicePromptsForDrivingLicenseEnglish`: Verified English voice guidance structure, welcome prompt, field prompts ("full legal name"), example hints ("Ramesh Kumar"), read-back template, and SELECT options.
+  2. `testGetVoicePromptsForDrivingLicenseTelugu`: Verified Telugu voice guidance structure, Telugu welcome message ("స్వాగతం"), Telugu labels ("పూర్తి పేరు"), and Telugu read-back templates ("మీరు {value} అన్నారు").
+  3. `testGetVoicePromptsForNonExistentServiceReturns404`: Non-existent service code correctly yields HTTP 404 Not Found.
+  4. `testNormalizeSpokenConfirmationIntents`: Spoken confirmations in English ("yes, that is correct") and Telugu ("అవును") correctly classify as `CONFIRM_YES`; cancellations ("no change it", "కాదు") classify as `CONFIRM_NO`.
+  5. `testNormalizeNumericSpeech`: Verified numeric normalization across spoken English words ("nine eight seven..." -> `987654321012`), Telugu Unicode digits ("౫౦౦౦౦" -> `50000`), and spoken Telugu words ("ఒకటి రెండు మూడు..." -> `123456789012`).
+  6. `testNormalizeDateSpeech`: Spoken English ("15th August 1995") and spoken Telugu ("15 ఆగస్టు 1995") normalize to standard ISO `1995-08-15`.
+  7. `testNormalizeSelectSpeech`: Spoken blood group ("o positive" / "ఓ పాజిటివ్") normalizes to `O+`; spoken vehicle class ("motorcycle with gear") normalizes to `Motorcycle with Gear (MCWG)`.
+  8. `testRecordVoiceTelemetryAndQueryStats`: Verified telemetry persistence across voice and keyboard fallback modes; verified statistical queries for total interactions, confirmation rate $\ge 90\%$, and language breakdowns.
+  9. `testInvalidTelemetryPayloadReturns400`: Payloads missing mandatory fields are rejected with HTTP 400 Bad Request.
+- Frontend Verification:
+  - `npm run build` executed successfully: Vite transformed 1,578 modules, outputting production bundle `dist/assets/index-tALIc-U5.js` (205.39 kB) and `dist/assets/index-D8WFdXiJ.css` (36.77 kB) with zero TypeScript errors.
+
+---
+
 ## Next Action
-Wait for user review and explicit approval ("ok") of Phase 7 before starting Phase 8 (Voice-First Multilingual Assistance).
+Wait for user review and explicit approval ("ok") of Phase 8 before proceeding to Phase 9 (Citizen User Interface).

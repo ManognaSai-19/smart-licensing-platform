@@ -79,6 +79,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/departments", "/api/departments/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services", "/api/services/**").permitAll()
+                        .requestMatchers("/api/voice/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

@@ -9,9 +9,11 @@ import {
   Volume2,
   AlertTriangle,
   Layers,
-  Activity
+  Activity,
+  Mic
 } from 'lucide-react';
 import { ServiceCatalogue } from './components/ServiceCatalogue';
+import { VoiceDashboard } from './components/VoiceDashboard';
 
 interface HealthData {
   status: string;
@@ -28,7 +30,7 @@ interface HealthData {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'catalogue' | 'health'>('catalogue');
+  const [activeTab, setActiveTab] = useState<'catalogue' | 'voice' | 'health'>('catalogue');
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,18 @@ export default function App() {
             </button>
             <button
               type="button"
+              onClick={() => setActiveTab('voice')}
+              className={`flex items-center space-x-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                activeTab === 'voice'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Mic className="w-4 h-4 text-indigo-600" />
+              <span>Voice Assistant (Phase 8)</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setActiveTab('health')}
               className={`flex items-center space-x-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === 'health'
@@ -124,6 +138,8 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'catalogue' ? (
           <ServiceCatalogue />
+        ) : activeTab === 'voice' ? (
+          <VoiceDashboard />
         ) : (
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

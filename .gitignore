@@ -10,6 +10,9 @@ dist/
 .env
 .env.local
 *.log
+backend/data/
+storage/
+startup-log.txt
 
 # IDE files
 .idea/
