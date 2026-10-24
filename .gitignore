@@ -5,6 +5,7 @@ build/
 node_modules/
 .dist/
 dist/
+backend/src/main/resources/static/
 
 # Environment and sensitive files
 .env
