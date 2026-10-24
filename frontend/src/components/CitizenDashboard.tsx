@@ -5,12 +5,10 @@ import { ApplicationWizard } from './ApplicationWizard';
 import { ApplicationDetailView } from './ApplicationDetailView';
 import { VoiceAssistantModal } from './VoiceAssistantModal';
 import { useAuth } from '../context/AuthContext';
+import { StatusBadge, MetricCard } from './ui/designSystem';
 import {
   FileText,
   Plus,
-  Clock,
-  CheckCircle2,
-  XCircle,
   RotateCcw,
   Search,
   Eye,
@@ -64,7 +62,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
         try {
           const detail = await applicationApi.getApplicationById(item.id);
           if (detail.reviewDecisions && detail.reviewDecisions.length > 0) {
-            reasonsMap[item.id] = detail.reviewDecisions[0].reason || 'Criteria mismatch';
+            reasonsMap[item.id] = detail.reviewDecisions[0].reason || 'Discrepancy in documentation or criteria';
           }
         } catch {
           // ignore
@@ -115,46 +113,6 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#15803D]/10 text-[#15803D] border border-[#15803D]/30">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#15803D]" />
-            <span>APPROVED</span>
-          </span>
-        );
-      case 'REJECTED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-            <XCircle className="w-3.5 h-3.5 text-rose-600" />
-            <span>ACTION REQUIRED</span>
-          </span>
-        );
-      case 'UNDER_VERIFICATION':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#B45309]/10 text-[#B45309] border border-[#B45309]/30">
-            <Clock className="w-3.5 h-3.5 text-[#B45309]" />
-            <span>REVIEW REQUIRED</span>
-          </span>
-        );
-      case 'SUBMITTED':
-      case 'RESUBMITTED':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#EAF2FF] text-[#2563EB] border border-[#cfe0fc]">
-            <Clock className="w-3.5 h-3.5 text-[#2563EB]" />
-            <span>SUBMITTED</span>
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-[#101828]/70">
-            <span>DRAFT</span>
-          </span>
-        );
-    }
-  };
-
   // Activity Counts from real backend data
   const inProgressCount = applications.filter(
     (a) => a.status === 'SUBMITTED' || a.status === 'RESUBMITTED' || a.status === 'UNDER_VERIFICATION'
@@ -162,32 +120,94 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
   const needsActionCount = applications.filter((a) => a.status === 'REJECTED').length;
   const completedCount = applications.filter((a) => a.status === 'APPROVED').length;
 
+  // Most recent rejected application needing correction
+  const pendingCorrectionApp = applications.find((a) => a.status === 'REJECTED');
+
   return (
     <div className="w-full space-y-6 max-w-6xl mx-auto pb-8">
-      {/* SCREEN 5 GREETING BANNER */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs">
-        <div className="text-center sm:text-left">
-          <h2 className="text-xl sm:text-2xl font-extrabold text-[#101828] tracking-tight">
+      {/* 1. GREETING BANNER WITH PRIMARY ACTION */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-xs">
+        <div className="text-center sm:text-left space-y-1">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#EAF2FF] text-[#2563EB] text-[11px] font-bold">
+            <Sparkles className="w-3 h-3" />
+            <span>Digital Citizen Portal</span>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#101828] tracking-tight">
             Good morning, {userName}!
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            What would you like to do today?
+          </h1>
+          <p className="text-xs sm:text-sm text-[#64748B]">
+            What licensing service would you like to apply for today?
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => handleOpenWizard()}
-          className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-2xl shadow-sm transition flex items-center gap-2 shrink-0"
+          className="px-5 py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-98 flex items-center gap-2 shrink-0"
         >
-          <Plus className="w-4 h-4 text-white" />
-          <span>New Application</span>
+          <Plus className="w-4 h-4 text-white stroke-[2.5]" />
+          <span>Start New Application</span>
+          <ArrowRight className="w-3.5 h-3.5 text-white/80" />
         </button>
       </div>
 
-      {/* SCREEN 5: 3 QUICK ACTION CARDS (MIDDLE ALIGNED) */}
+      {/* 2. PENDING CORRECTIONS & NEXT ACTIONS (Prominent Alert Card if action required) */}
+      {pendingCorrectionApp && (
+        <div className="p-5 sm:p-6 bg-rose-50/70 border border-rose-200 rounded-3xl space-y-3 animate-in fade-in shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-rose-200/80">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-xl bg-rose-100 text-[#B91C1C]">
+                <AlertTriangle className="w-4 h-4" />
+              </span>
+              <span className="text-xs font-extrabold text-[#B91C1C] uppercase tracking-wider">
+                Pending Correction Required
+              </span>
+            </div>
+            <span className="font-mono text-xs font-bold text-[#101828]">
+              Ref: {pendingCorrectionApp.referenceNumber}
+            </span>
+          </div>
+
+          <div className="space-y-1 text-xs text-[#0F172A]">
+            <p className="font-bold text-sm text-[#101828]">
+              {pendingCorrectionApp.serviceName}
+            </p>
+            <p className="text-[#B91C1C] bg-white/70 p-3 rounded-xl border border-rose-200 font-medium">
+              Reviewing Officer Note:{' '}
+              <span className="font-bold">
+                "{rejectionReasons[pendingCorrectionApp.id] || 'Verification discrepancy identified by reviewing officer.'}"
+              </span>
+            </p>
+          </div>
+
+          <div className="pt-1 flex flex-col sm:flex-row items-center gap-2.5">
+            <button
+              type="button"
+              onClick={async () => {
+                const full = await applicationApi.getApplicationById(pendingCorrectionApp.id);
+                handleOpenWizard(full);
+              }}
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#B91C1C] hover:bg-rose-800 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Resolve Discrepancy & Resubmit</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSelectedAppId(pendingCorrectionApp.id)}
+              className="w-full sm:w-auto px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-300 text-[#0F172A] font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+            >
+              <Eye className="w-3.5 h-3.5 text-slate-500" />
+              <span>Inspect Full Application Dossier</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 3. 3 QUICK ACTION CARDS (MIDDLE ALIGNED) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Action 1: New Application */}
+        {/* Action 1: Start New Application */}
         <button
           type="button"
           onClick={() => handleOpenWizard()}
@@ -196,8 +216,8 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
           <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-xs">
             <Plus className="w-7 h-7 text-white stroke-[2.5]" />
           </div>
-          <h4 className="text-base font-extrabold tracking-tight">New Application</h4>
-          <p className="text-xs text-[#EAF2FF] mt-1 font-medium">Start a service request</p>
+          <h3 className="text-base font-extrabold tracking-tight">New Application</h3>
+          <p className="text-xs text-[#EAF2FF] mt-1 font-medium">Start a new service request</p>
         </button>
 
         {/* Action 2: Explore Services */}
@@ -209,8 +229,8 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
           <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-xs">
             <Compass className="w-7 h-7" />
           </div>
-          <h4 className="text-base font-extrabold text-[#101828] tracking-tight">Explore Services</h4>
-          <p className="text-xs text-slate-500 mt-1 font-medium">View all available services</p>
+          <h3 className="text-base font-extrabold text-[#101828] tracking-tight">Explore Services</h3>
+          <p className="text-xs text-[#64748B] mt-1 font-medium">View all available licenses</p>
         </button>
 
         {/* Action 3: My Applications */}
@@ -221,82 +241,75 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
           <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-xs">
             <FileText className="w-7 h-7" />
           </div>
-          <h4 className="text-base font-extrabold text-[#101828] tracking-tight">My Applications</h4>
-          <p className="text-xs text-slate-500 mt-1 font-medium">Track your requests</p>
+          <h3 className="text-base font-extrabold text-[#101828] tracking-tight">My Applications</h3>
+          <p className="text-xs text-[#64748B] mt-1 font-medium">Track submitted requests</p>
         </a>
       </div>
 
-      {/* SCREEN 5: YOUR ACTIVITY SUMMARY & TALK TO ASSISTANT */}
+      {/* 4. ACTIVITY SUMMARY CARDS & PROMINENT VOICE ASSISTANT ENTRY */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left: Your Activity KPI Cards */}
         <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#101828]">Your Activity</h3>
-            <span className="text-[11px] font-semibold text-slate-400">Real-time status</span>
+            <div className="space-y-0.5">
+              <h2 className="text-sm font-bold text-[#101828]">Application Activity</h2>
+              <p className="text-xs text-[#64748B]">Real-time milestone overview</p>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+              {applications.length} Total Registered
+            </span>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            {/* In Progress */}
-            <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-slate-200 flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-3xl font-extrabold text-[#2563EB] block">
-                {inProgressCount}
-              </span>
-              <span className="text-xs font-bold text-[#101828] block">
-                In Progress
-              </span>
-              <span className="text-[10px] text-slate-400 hidden sm:block">Under verification</span>
-            </div>
-
-            {/* Needs Action */}
-            <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-3xl font-extrabold text-[#B45309] block">
-                {needsActionCount}
-              </span>
-              <span className="text-xs font-bold text-[#B45309] block">
-                Needs Action
-              </span>
-              <span className="text-[10px] text-amber-700/80 hidden sm:block">Corrections needed</span>
-            </div>
-
-            {/* Completed */}
-            <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-3xl font-extrabold text-[#15803D] block">
-                {completedCount}
-              </span>
-              <span className="text-xs font-bold text-[#15803D] block">
-                Completed
-              </span>
-              <span className="text-[10px] text-emerald-700/80 hidden sm:block">Approved licenses</span>
-            </div>
+            <MetricCard
+              label="In Progress"
+              value={inProgressCount}
+              helperText="Under review"
+              tone="blue"
+            />
+            <MetricCard
+              label="Needs Action"
+              value={needsActionCount}
+              helperText="Corrections required"
+              tone="amber"
+            />
+            <MetricCard
+              label="Completed"
+              value={completedCount}
+              helperText="Approved licenses"
+              tone="green"
+            />
           </div>
         </div>
 
-        {/* Right: Talk to Assistant Card (Middle Aligned) */}
+        {/* Right: Prominent Voice Assistant Entry Point */}
         <div className="lg:col-span-4 bg-gradient-to-br from-[#101828] via-[#162544] to-[#2563EB] rounded-3xl p-6 text-white shadow-md flex flex-col items-center justify-center text-center space-y-3">
           <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shadow-inner">
             <Mic className="w-7 h-7 text-[#EAF2FF]" />
           </div>
           <div>
-            <h4 className="text-base font-bold text-white">Talk to Assistant</h4>
-            <p className="text-xs text-[#EAF2FF]/80 mt-0.5 font-medium">Telugu & English voice help</p>
+            <h3 className="text-base font-extrabold text-white">Voice Assistant</h3>
+            <p className="text-xs text-[#EAF2FF]/80 mt-0.5 font-medium">
+              Telugu & English guided help
+            </p>
           </div>
 
           <p className="text-xs text-[#EAF2FF]/90 leading-relaxed max-w-xs">
-            Need help? Ask your questions using voice or text for step-by-step guidance.
+            Need guidance? Ask questions or speak your answers aloud for automated form completion.
           </p>
 
           <button
             type="button"
             onClick={() => setIsVoiceAssistantOpen(true)}
-            className="w-full py-3 px-4 bg-white text-[#2563EB] hover:bg-[#EAF2FF] font-bold rounded-2xl text-xs shadow-sm transition flex items-center justify-center gap-2 mt-1"
+            className="w-full py-3 px-4 bg-white text-[#2563EB] hover:bg-[#EAF2FF] font-black rounded-2xl text-xs shadow-sm transition flex items-center justify-center gap-2 mt-1 active:scale-98"
           >
             <Sparkles className="w-4 h-4 text-[#2563EB]" />
-            <span>Start Talking</span>
+            <span>Start Voice Assistant</span>
           </button>
         </div>
       </div>
 
-      {/* QUICK STATUS LOOKUP CARD */}
+      {/* 5. QUICK STATUS LOOKUP CARD */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-4">
         <div className="flex items-center gap-2.5 text-[#101828] font-bold text-sm">
           <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
@@ -313,8 +326,8 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
                 type="text"
                 value={statusSearchRef}
                 onChange={(e) => setStatusSearchRef(e.target.value)}
-                placeholder="Enter Reference (e.g. DRL-2026-001 or APP-20261023-...)"
-                className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-2xl text-xs font-mono text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none transition"
+                placeholder="Enter Reference Number (e.g. DRL-2026-001 or APP-20261023-...)"
+                className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-2xl text-xs font-mono text-[#0F172A] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none transition"
               />
             </div>
             <button
@@ -328,8 +341,8 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
         </form>
 
         {statusSearchError && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-[#B91C1C] flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-[#B91C1C]" />
             <span>{statusSearchError}</span>
           </div>
         )}
@@ -340,11 +353,12 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
               <span className="font-mono text-xs font-bold text-[#101828]">
                 {statusSearchResult.referenceNumber}
               </span>
-              {getStatusBadge(statusSearchResult.status)}
+              <StatusBadge status={statusSearchResult.status} />
             </div>
             <p className="text-sm font-bold text-[#101828]">{statusSearchResult.serviceName}</p>
-            <p className="text-xs text-[#101828]/70">
-              Department: {statusSearchResult.departmentName} &bull; Applied: {new Date(statusSearchResult.createdAt).toLocaleDateString()}
+            <p className="text-xs text-[#64748B]">
+              Department: {statusSearchResult.departmentName} &bull; Applied:{' '}
+              {new Date(statusSearchResult.createdAt).toLocaleDateString()}
             </p>
 
             <button
@@ -359,12 +373,12 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
         )}
       </div>
 
-      {/* SCREEN 5: RECENT APPLICATIONS LIST / TABLE */}
+      {/* 6. RECENT APPLICATIONS LIST */}
       <div id="recent-applications" className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="text-sm font-bold text-[#101828]">Recent Applications</h3>
+            <h2 className="text-sm font-bold text-[#101828]">Recent Applications</h2>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#EAF2FF] text-[#2563EB]">
               {applications.length}
             </span>
@@ -387,9 +401,9 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
           <div className="p-8 text-center space-y-3">
             <FileText className="w-10 h-10 text-slate-300 mx-auto" />
             <div>
-              <h4 className="text-sm font-bold text-[#101828]">No applications applied yet</h4>
+              <h3 className="text-sm font-bold text-[#101828]">No applications applied yet</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
-                Tap the "New Application" button above to submit your first digital application.
+                Tap the "Start New Application" button above to submit your first digital application.
               </p>
             </div>
           </div>
@@ -414,10 +428,10 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
                         <span className="font-mono text-xs font-bold text-[#2563EB]">
                           {item.referenceNumber}
                         </span>
-                        {getStatusBadge(item.status)}
+                        <StatusBadge status={item.status} />
                       </div>
-                      <h4 className="text-sm font-bold text-[#101828]">{item.serviceName}</h4>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <h3 className="text-sm font-bold text-[#101828]">{item.serviceName}</h3>
+                      <div className="flex items-center gap-2 text-xs text-[#64748B]">
                         <span className="inline-flex items-center gap-1">
                           <Building className="w-3.5 h-3.5 text-slate-400" />
                           <span>{item.departmentName}</span>
@@ -460,10 +474,10 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
                   {isRejected && (
                     <div className="mt-3 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl space-y-2">
                       <div className="flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <AlertTriangle className="w-4 h-4 text-[#B91C1C] shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-xs font-bold text-rose-900">Why was this rejected?</p>
-                          <p className="text-xs text-rose-700 mt-0.5">
+                          <p className="text-xs font-bold text-[#B91C1C]">Officer Feedback: Why was this rejected?</p>
+                          <p className="text-xs text-rose-800 mt-0.5">
                             {rejectionReason || 'Document clarity or verification mismatch identified by reviewing officer.'}
                           </p>
                         </div>
@@ -475,7 +489,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
                           const full = await applicationApi.getApplicationById(item.id);
                           handleOpenWizard(full);
                         }}
-                        className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-[#B91C1C] hover:bg-rose-800 text-white font-bold rounded-xl text-xs shadow-sm transition flex items-center justify-center gap-1.5"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>Fix Application & Resubmit</span>
@@ -506,7 +520,7 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
         />
       )}
 
-      {/* Application Dossier Detail View (Screen 11) */}
+      {/* Application Dossier Detail View */}
       {selectedAppId && (
         <ApplicationDetailView
           applicationId={selectedAppId}
@@ -528,4 +542,3 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
     </div>
   );
 };
-

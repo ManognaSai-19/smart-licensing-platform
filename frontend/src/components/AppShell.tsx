@@ -60,11 +60,11 @@ export const AppShell: React.FC<AppShellProps> = ({
     { key: 'my-applications', label: 'My Applications', icon: FileText },
     { key: 'notifications', label: 'Notifications', icon: Bell, badge: unreadNotificationsCount },
     { key: 'profile', label: 'Profile', icon: UserIcon },
-    { key: 'help', label: 'Help & Support', icon: HelpCircle },
+    { key: 'help', label: 'Help', icon: HelpCircle },
   ];
 
   const officerNav: NavItem[] = [
-    { key: 'officer-queue', label: 'Officer Queue', icon: UserCheck },
+    { key: 'officer-queue', label: 'Adjudication Queue', icon: UserCheck },
     { key: 'explore-services', label: 'Services Catalogue', icon: Layers },
     { key: 'notifications', label: 'Notifications', icon: Bell },
     { key: 'profile', label: 'Profile', icon: UserIcon },
@@ -81,21 +81,25 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   const navItems = role === 'ADMIN' ? adminNav : role === 'OFFICER' ? officerNav : citizenNav;
 
+  const currentNavTitle =
+    navItems.find((item) => item.key === activeNav)?.label ||
+    (activeNav === 'my-applications' ? 'My Applications' : 'Dashboard');
+
   const handleNavClick = (key: string) => {
     onNavigate(key);
     setMobileMenuOpen(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#101828] flex flex-col font-sans">
-      {/* TOP BAR (64-72px) */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 h-16 px-4 sm:px-6 flex items-center justify-between shadow-xs">
-        {/* Left: Mobile Toggle & Brand */}
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans selection:bg-[#EAF2FF] selection:text-[#2563EB]">
+      {/* TOP BAR */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 h-16 px-4 sm:px-6 flex items-center justify-between shadow-xs">
+        {/* Left: Mobile Menu Toggle & Brand / Page Title */}
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-600 hover:text-[#101828] hover:bg-slate-100 rounded-xl transition"
+            className="md:hidden p-2 text-slate-600 hover:text-[#0F172A] hover:bg-slate-100 rounded-xl transition"
             aria-label="Toggle Navigation Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -103,31 +107,37 @@ export const AppShell: React.FC<AppShellProps> = ({
 
           <div
             onClick={() => onNavigate(role === 'ADMIN' ? 'admin-dashboard' : role === 'OFFICER' ? 'officer-queue' : 'citizen-dashboard')}
-            className="flex items-center gap-2.5 cursor-pointer"
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-9 h-9 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center font-extrabold shadow-sm">
+            <div className="w-9 h-9 rounded-2xl bg-[#101828] text-white flex items-center justify-center font-extrabold shadow-sm group-hover:bg-[#2563EB] transition-colors">
               <Shield className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="font-extrabold text-[#101828] text-sm tracking-tight leading-none block">
-                Smart Digital Licensing
+              <span className="font-extrabold text-[#0F172A] text-sm tracking-tight leading-none block">
+                Smart Licensing
               </span>
-              <span className="text-[10px] font-semibold text-slate-500 leading-none mt-1 block">
-                {role === 'ADMIN' ? 'Admin Portal' : role === 'OFFICER' ? 'Department Adjudication' : 'Citizen Services'}
+              <span className="text-[10px] font-semibold text-[#64748B] leading-none mt-1 block">
+                {role === 'ADMIN' ? 'Admin Portal' : role === 'OFFICER' ? 'Officer Queue' : 'Citizen Portal'}
               </span>
             </div>
+          </div>
+
+          {/* Breadcrumb separator and active page title on desktop */}
+          <div className="hidden lg:flex items-center gap-2 pl-4 border-l border-slate-200 ml-2">
+            <span className="text-xs text-slate-400 font-medium">/</span>
+            <span className="text-xs font-bold text-[#0F172A]">{currentNavTitle}</span>
           </div>
         </div>
 
         {/* Right Action Icons & User Profile */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Language Selector */}
           <div className="flex items-center gap-1 bg-slate-100/90 border border-slate-200 rounded-xl p-1 text-xs font-bold text-slate-700">
             <button
               type="button"
               onClick={() => onLanguageChange('en')}
               className={`px-2.5 py-1 rounded-lg transition ${
-                language === 'en' ? 'bg-white text-[#2563EB] shadow-xs' : 'hover:text-[#101828]'
+                language === 'en' ? 'bg-white text-[#2563EB] shadow-xs' : 'hover:text-[#0F172A]'
               }`}
             >
               EN
@@ -136,7 +146,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               type="button"
               onClick={() => onLanguageChange('te')}
               className={`px-2.5 py-1 rounded-lg transition ${
-                language === 'te' ? 'bg-white text-[#2563EB] shadow-xs' : 'hover:text-[#101828]'
+                language === 'te' ? 'bg-white text-[#2563EB] shadow-xs' : 'hover:text-[#0F172A]'
               }`}
             >
               తెలుగు
@@ -149,14 +159,14 @@ export const AppShell: React.FC<AppShellProps> = ({
               type="button"
               onClick={onTriggerVoice}
               title="Launch Spoken Voice Assistant"
-              className="p-2 text-[#2563EB] bg-[#EAF2FF] hover:bg-[#dbe9fe] rounded-xl transition flex items-center gap-1 text-xs font-bold"
+              className="p-2 text-[#2563EB] bg-[#EAF2FF] hover:bg-[#dbe9fe] rounded-xl transition flex items-center gap-1.5 text-xs font-bold"
             >
               <Mic className="w-4 h-4" />
               <span className="hidden sm:inline">Voice Help</span>
             </button>
           )}
 
-          {/* Accessibility Settings Modal Button */}
+          {/* Accessibility Settings Shortcut */}
           <button
             type="button"
             onClick={onOpenAccessibility}
@@ -175,7 +185,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           >
             <Bell className="w-4 h-4" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#B91C1C] ring-2 ring-white" />
             )}
           </button>
 
@@ -186,14 +196,14 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
               className="flex items-center gap-2 p-1.5 pl-2 rounded-2xl hover:bg-slate-100 border border-slate-200 transition"
             >
-              <div className="w-7 h-7 rounded-xl bg-[#EAF2FF] text-[#2563EB] font-bold text-xs flex items-center justify-center">
+              <div className="w-7 h-7 rounded-xl bg-[#EAF2FF] text-[#2563EB] font-black text-xs flex items-center justify-center">
                 {user?.fullName?.charAt(0) || 'U'}
               </div>
               <div className="hidden sm:block text-left text-xs leading-none">
-                <span className="font-bold text-[#101828] block truncate max-w-[120px]">
+                <span className="font-bold text-[#0F172A] block truncate max-w-[120px]">
                   {user?.fullName || 'User'}
                 </span>
-                <span className="text-[10px] font-semibold text-slate-400 capitalize">
+                <span className="text-[10px] font-semibold text-[#64748B] capitalize">
                   {role.toLowerCase()}
                 </span>
               </div>
@@ -203,12 +213,12 @@ export const AppShell: React.FC<AppShellProps> = ({
             {/* User Dropdown */}
             {userDropdownOpen && (
               <div
-                className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in"
+                className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in"
                 onClick={() => setUserDropdownOpen(false)}
               >
                 <div className="px-4 py-2 border-b border-slate-100">
-                  <p className="text-xs font-bold text-[#101828]">{user?.fullName}</p>
-                  <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
+                  <p className="text-xs font-bold text-[#0F172A]">{user?.fullName}</p>
+                  <p className="text-[11px] text-[#64748B] truncate">{user?.email}</p>
                 </div>
 
                 <button
@@ -226,7 +236,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   className="w-full px-4 py-2 text-left text-xs text-slate-700 hover:bg-[#EAF2FF] hover:text-[#2563EB] flex items-center gap-2"
                 >
                   <Sliders className="w-3.5 h-3.5" />
-                  <span>Preferences</span>
+                  <span>Accessibility Preferences</span>
                 </button>
 
                 <div className="border-t border-slate-100 my-1" />
@@ -234,7 +244,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 <button
                   type="button"
                   onClick={logout}
-                  className="w-full px-4 py-2 text-left text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-semibold"
+                  className="w-full px-4 py-2 text-left text-xs text-[#B91C1C] hover:bg-rose-50 flex items-center gap-2 font-semibold"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
@@ -247,7 +257,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* BODY WITH PERSISTENT SIDEBAR + CONTENT */}
       <div className="flex-1 flex max-w-[1440px] w-full mx-auto">
-        {/* DESKTOP SIDEBAR (240-260px) */}
+        {/* DESKTOP SIDEBAR */}
         <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-200 p-4 shrink-0">
           <div className="space-y-1">
             {navItems.map((item) => {
@@ -259,10 +269,10 @@ export const AppShell: React.FC<AppShellProps> = ({
                   key={item.key}
                   type="button"
                   onClick={() => handleNavClick(item.key)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
                     isActive
                       ? 'bg-[#EAF2FF] text-[#2563EB]'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-[#101828]'
+                      : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -286,7 +296,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 Logged in as
               </span>
-              <p className="text-xs font-bold text-[#101828] mt-0.5 truncate">{user?.fullName}</p>
+              <p className="text-xs font-bold text-[#0F172A] mt-0.5 truncate">{user?.fullName}</p>
               <span className="text-[10px] font-semibold text-[#2563EB] bg-[#EAF2FF] px-2 py-0.5 rounded-full inline-block mt-1">
                 {role}
               </span>
@@ -295,7 +305,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             <button
               type="button"
               onClick={logout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#64748B] hover:text-[#B91C1C] hover:bg-rose-50 rounded-xl transition"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
@@ -319,7 +329,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   <div className="w-8 h-8 rounded-xl bg-[#2563EB] text-white flex items-center justify-center font-bold">
                     <Shield className="w-4 h-4" />
                   </div>
-                  <span className="font-extrabold text-xs text-[#101828]">Smart Licensing</span>
+                  <span className="font-extrabold text-xs text-[#0F172A]">Smart Licensing</span>
                 </div>
                 <button
                   type="button"
@@ -343,7 +353,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                       className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl text-xs font-bold transition ${
                         isActive
                           ? 'bg-[#EAF2FF] text-[#2563EB]'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-[#101828]'
+                          : 'text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A]'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -365,7 +375,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 <button
                   type="button"
                   onClick={logout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#B91C1C] hover:bg-rose-50 rounded-xl transition"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
@@ -393,13 +403,13 @@ export const AppShell: React.FC<AppShellProps> = ({
               type="button"
               onClick={() => handleNavClick(item.key)}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition relative ${
-                isActive ? 'text-[#2563EB]' : 'text-slate-400 hover:text-[#101828]'
+                isActive ? 'text-[#2563EB]' : 'text-[#64748B] hover:text-[#0F172A]'
               }`}
             >
               <div className="relative">
                 <Icon className="w-5 h-5" />
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-1 ring-white" />
+                  <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-[#B91C1C] ring-1 ring-white" />
                 )}
               </div>
               <span className="truncate max-w-[64px]">{item.label}</span>
