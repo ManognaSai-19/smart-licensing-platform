@@ -77,6 +77,22 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/manifest.json",
+                                "/sw.js",
+                                "/favicon.png",
+                                "/assets/**",
+                                "/icons/**",
+                                "/citizen-dashboard",
+                                "/explore-services",
+                                "/my-applications",
+                                "/officer-queue",
+                                "/admin-dashboard",
+                                "/notifications",
+                                "/profile",
+                                "/help",
+                                "/research-benchmark",
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/health",
