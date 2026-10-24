@@ -120,13 +120,13 @@ export const AppShell: React.FC<AppShellProps> = ({
         </div>
 
         {/* Right Action Icons & User Profile */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Language Selector */}
-          <div className="flex items-center bg-slate-100 rounded-xl p-1 text-xs font-bold text-slate-700">
+          <div className="flex items-center gap-1 bg-slate-100/90 border border-slate-200 rounded-xl p-1 text-xs font-bold text-slate-700">
             <button
               type="button"
               onClick={() => onLanguageChange('en')}
-              className={`px-2 py-0.5 rounded-lg transition ${
+              className={`px-2.5 py-1 rounded-lg transition ${
                 language === 'en' ? 'bg-white text-[#2563EB] shadow-xs' : 'hover:text-[#101828]'
               }`}
             >
@@ -135,7 +135,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             <button
               type="button"
               onClick={() => onLanguageChange('te')}
-              className={`px-2 py-0.5 rounded-lg transition ${
+              className={`px-2.5 py-1 rounded-lg transition ${
                 language === 'te' ? 'bg-white text-[#2563EB] shadow-xs' : 'hover:text-[#101828]'
               }`}
             >
@@ -271,7 +271,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   </div>
 
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#2563EB] text-white">
+                    <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-[#2563EB] text-white shrink-0 ml-auto">
                       {item.badge}
                     </span>
                   )}

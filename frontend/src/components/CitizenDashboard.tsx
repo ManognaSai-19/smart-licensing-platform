@@ -165,8 +165,8 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
   return (
     <div className="w-full space-y-6 max-w-6xl mx-auto pb-8">
       {/* SCREEN 5 GREETING BANNER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs">
-        <div>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs">
+        <div className="text-center sm:text-left">
           <h2 className="text-xl sm:text-2xl font-extrabold text-[#101828] tracking-tight">
             Good morning, {userName}!
           </h2>
@@ -178,67 +178,58 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
         <button
           type="button"
           onClick={() => handleOpenWizard()}
-          className="self-start sm:self-center px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-2xl shadow-sm transition flex items-center gap-2"
+          className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-2xl shadow-sm transition flex items-center gap-2 shrink-0"
         >
           <Plus className="w-4 h-4 text-white" />
           <span>New Application</span>
         </button>
       </div>
 
-      {/* SCREEN 5: 3 QUICK ACTION CARDS */}
+      {/* SCREEN 5: 3 QUICK ACTION CARDS (MIDDLE ALIGNED) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Action 1: New Application */}
         <button
           type="button"
           onClick={() => handleOpenWizard()}
-          className="p-5 rounded-3xl bg-[#2563EB] text-white text-left shadow-md hover:bg-[#1D4ED8] transition flex flex-col justify-between h-36 group relative overflow-hidden"
+          className="p-6 rounded-3xl bg-gradient-to-br from-[#2563EB] to-[#1D4ED8] text-white shadow-md hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group min-h-[175px]"
         >
-          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
-            <Plus className="w-5 h-5 text-white stroke-[2.5]" />
+          <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-xs">
+            <Plus className="w-7 h-7 text-white stroke-[2.5]" />
           </div>
-          <div>
-            <h4 className="text-base font-extrabold">New Application</h4>
-            <p className="text-xs text-[#EAF2FF] mt-0.5">Start a service request</p>
-          </div>
-          <ArrowRight className="w-4 h-4 text-white/70 absolute bottom-5 right-5 group-hover:translate-x-1 transition-transform" />
+          <h4 className="text-base font-extrabold tracking-tight">New Application</h4>
+          <p className="text-xs text-[#EAF2FF] mt-1 font-medium">Start a service request</p>
         </button>
 
         {/* Action 2: Explore Services */}
         <button
           type="button"
           onClick={() => (onNavigate ? onNavigate('explore-services') : null)}
-          className="p-5 rounded-3xl bg-white text-left border border-slate-200/90 shadow-xs hover:border-[#2563EB] hover:shadow-md transition flex flex-col justify-between h-36 group relative"
+          className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:border-[#2563EB] hover:shadow-md transition-all flex flex-col items-center justify-center text-center group min-h-[175px]"
         >
-          <div className="w-10 h-10 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
-            <Compass className="w-5 h-5" />
+          <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-xs">
+            <Compass className="w-7 h-7" />
           </div>
-          <div>
-            <h4 className="text-base font-extrabold text-[#101828]">Explore Services</h4>
-            <p className="text-xs text-slate-500 mt-0.5">View all available services</p>
-          </div>
-          <ArrowRight className="w-4 h-4 text-slate-400 absolute bottom-5 right-5 group-hover:translate-x-1 group-hover:text-[#2563EB] transition-all" />
+          <h4 className="text-base font-extrabold text-[#101828] tracking-tight">Explore Services</h4>
+          <p className="text-xs text-slate-500 mt-1 font-medium">View all available services</p>
         </button>
 
         {/* Action 3: My Applications */}
         <a
           href="#recent-applications"
-          className="p-5 rounded-3xl bg-white text-left border border-slate-200/90 shadow-xs hover:border-[#2563EB] hover:shadow-md transition flex flex-col justify-between h-36 group relative"
+          className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-xs hover:border-[#2563EB] hover:shadow-md transition-all flex flex-col items-center justify-center text-center group min-h-[175px]"
         >
-          <div className="w-10 h-10 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
-            <FileText className="w-5 h-5" />
+          <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-xs">
+            <FileText className="w-7 h-7" />
           </div>
-          <div>
-            <h4 className="text-base font-extrabold text-[#101828]">My Applications</h4>
-            <p className="text-xs text-slate-500 mt-0.5">Track your requests</p>
-          </div>
-          <ArrowRight className="w-4 h-4 text-slate-400 absolute bottom-5 right-5 group-hover:translate-x-1 group-hover:text-[#2563EB] transition-all" />
+          <h4 className="text-base font-extrabold text-[#101828] tracking-tight">My Applications</h4>
+          <p className="text-xs text-slate-500 mt-1 font-medium">Track your requests</p>
         </a>
       </div>
 
       {/* SCREEN 5: YOUR ACTIVITY SUMMARY & TALK TO ASSISTANT */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left: Your Activity KPI Cards */}
-        <div className="lg:col-span-8 bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-4">
+        <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-[#101828]">Your Activity</h3>
             <span className="text-[11px] font-semibold text-slate-400">Real-time status</span>
@@ -246,125 +237,130 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
 
           <div className="grid grid-cols-3 gap-3">
             {/* In Progress */}
-            <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-slate-200 text-center space-y-1">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#2563EB] block">
+            <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-slate-200 flex flex-col items-center justify-center text-center space-y-1">
+              <span className="text-3xl font-extrabold text-[#2563EB] block">
                 {inProgressCount}
               </span>
-              <span className="text-[11px] sm:text-xs font-bold text-[#101828] block">
+              <span className="text-xs font-bold text-[#101828] block">
                 In Progress
               </span>
               <span className="text-[10px] text-slate-400 hidden sm:block">Under verification</span>
             </div>
 
             {/* Needs Action */}
-            <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 text-center space-y-1">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#B45309] block">
+            <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 flex flex-col items-center justify-center text-center space-y-1">
+              <span className="text-3xl font-extrabold text-[#B45309] block">
                 {needsActionCount}
               </span>
-              <span className="text-[11px] sm:text-xs font-bold text-[#B45309] block">
+              <span className="text-xs font-bold text-[#B45309] block">
                 Needs Action
               </span>
-              <span className="text-[10px] text-amber-600/80 hidden sm:block">Corrections needed</span>
+              <span className="text-[10px] text-amber-700/80 hidden sm:block">Corrections needed</span>
             </div>
 
             {/* Completed */}
-            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200/80 text-center space-y-1">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#15803D] block">
+            <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 flex flex-col items-center justify-center text-center space-y-1">
+              <span className="text-3xl font-extrabold text-[#15803D] block">
                 {completedCount}
               </span>
-              <span className="text-[11px] sm:text-xs font-bold text-[#15803D] block">
+              <span className="text-xs font-bold text-[#15803D] block">
                 Completed
               </span>
-              <span className="text-[10px] text-emerald-600/80 hidden sm:block">Approved licenses</span>
+              <span className="text-[10px] text-emerald-700/80 hidden sm:block">Approved licenses</span>
             </div>
           </div>
         </div>
 
-        {/* Right: Talk to Assistant Card */}
-        <div className="lg:col-span-4 bg-gradient-to-br from-[#101828] via-[#162544] to-[#2563EB] rounded-3xl p-5 text-white shadow-md flex flex-col justify-between space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0">
-              <Mic className="w-5 h-5 text-[#EAF2FF]" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-white">Talk to Assistant</h4>
-              <p className="text-[11px] text-[#EAF2FF]/80">Telugu & English voice help</p>
-            </div>
+        {/* Right: Talk to Assistant Card (Middle Aligned) */}
+        <div className="lg:col-span-4 bg-gradient-to-br from-[#101828] via-[#162544] to-[#2563EB] rounded-3xl p-6 text-white shadow-md flex flex-col items-center justify-center text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center shadow-inner">
+            <Mic className="w-7 h-7 text-[#EAF2FF]" />
+          </div>
+          <div>
+            <h4 className="text-base font-bold text-white">Talk to Assistant</h4>
+            <p className="text-xs text-[#EAF2FF]/80 mt-0.5 font-medium">Telugu & English voice help</p>
           </div>
 
-          <p className="text-xs text-[#EAF2FF]/90 leading-relaxed">
+          <p className="text-xs text-[#EAF2FF]/90 leading-relaxed max-w-xs">
             Need help? Ask your questions using voice or text for step-by-step guidance.
           </p>
 
           <button
             type="button"
             onClick={() => setIsVoiceAssistantOpen(true)}
-            className="w-full py-2.5 px-4 bg-white text-[#2563EB] hover:bg-[#EAF2FF] font-bold rounded-2xl text-xs shadow-sm transition flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 bg-white text-[#2563EB] hover:bg-[#EAF2FF] font-bold rounded-2xl text-xs shadow-sm transition flex items-center justify-center gap-2 mt-1"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#2563EB]" />
+            <Sparkles className="w-4 h-4 text-[#2563EB]" />
             <span>Start Talking</span>
           </button>
         </div>
       </div>
 
       {/* QUICK STATUS LOOKUP CARD */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-3">
-        <div className="flex items-center gap-2 text-[#101828] font-bold text-sm">
-          <Search className="w-4 h-4 text-[#2563EB]" />
+      <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center gap-2.5 text-[#101828] font-bold text-sm">
+          <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
+            <Search className="w-4 h-4" />
+          </div>
           <span>Check Application Status</span>
         </div>
 
-        <form onSubmit={handleCheckStatus} className="space-y-2">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={statusSearchRef}
-              onChange={(e) => setStatusSearchRef(e.target.value)}
-              placeholder="Enter Reference (e.g. DRL-2026-001 or APP-20261023-...)"
-              className="flex-1 px-4 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-2xl text-xs font-mono text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none"
-            />
+        <form onSubmit={handleCheckStatus} className="space-y-3">
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={statusSearchRef}
+                onChange={(e) => setStatusSearchRef(e.target.value)}
+                placeholder="Enter Reference (e.g. DRL-2026-001 or APP-20261023-...)"
+                className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-2xl text-xs font-mono text-[#101828] focus:ring-2 focus:ring-[#2563EB] focus:bg-white focus:outline-none transition"
+              />
+            </div>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-[#101828] hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs shadow-sm transition whitespace-nowrap"
+              className="px-6 py-3 bg-[#101828] hover:bg-slate-800 text-white font-bold rounded-2xl text-xs shadow-sm transition whitespace-nowrap flex items-center justify-center gap-2"
             >
-              Check Status
+              <span>Check Status</span>
+              <ArrowRight className="w-3.5 h-3.5 text-white/70" />
             </button>
           </div>
         </form>
 
         {statusSearchError && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-center gap-2">
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-700 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{statusSearchError}</span>
           </div>
         )}
 
         {statusSearchResult && (
-          <div className="p-4 bg-[#EAF2FF] border border-[#cfe0fc] rounded-2xl space-y-2">
+          <div className="p-5 bg-[#EAF2FF] border border-[#cfe0fc] rounded-2xl space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs font-bold text-[#101828]">
                 {statusSearchResult.referenceNumber}
               </span>
               {getStatusBadge(statusSearchResult.status)}
             </div>
-            <p className="text-xs font-semibold text-[#101828]">{statusSearchResult.serviceName}</p>
-            <p className="text-[11px] text-[#101828]/70">
+            <p className="text-sm font-bold text-[#101828]">{statusSearchResult.serviceName}</p>
+            <p className="text-xs text-[#101828]/70">
               Department: {statusSearchResult.departmentName} &bull; Applied: {new Date(statusSearchResult.createdAt).toLocaleDateString()}
             </p>
 
             <button
               type="button"
               onClick={() => setSelectedAppId(statusSearchResult.id)}
-              className="w-full mt-2 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl transition"
+              className="w-full py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
             >
-              View Full Status & Timeline →
+              <span>View Full Status & Timeline</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
       </div>
 
       {/* SCREEN 5: RECENT APPLICATIONS LIST / TABLE */}
-      <div id="recent-applications" className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs space-y-4">
+      <div id="recent-applications" className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[#2563EB]" />
@@ -406,14 +402,14 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
               return (
                 <div
                   key={item.id}
-                  className={`p-4 rounded-2xl border transition-all ${
+                  className={`p-5 rounded-2xl border transition-all ${
                     isRejected
                       ? 'border-rose-300 bg-rose-50/20 shadow-xs'
                       : 'border-slate-200 bg-[#F8FAFC]/50 hover:bg-white hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="space-y-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-xs font-bold text-[#2563EB]">
                           {item.referenceNumber}
@@ -421,24 +417,24 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
                         {getStatusBadge(item.status)}
                       </div>
                       <h4 className="text-sm font-bold text-[#101828]">{item.serviceName}</h4>
-                      <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
                         <span className="inline-flex items-center gap-1">
-                          <Building className="w-3 h-3 text-slate-400" />
+                          <Building className="w-3.5 h-3.5 text-slate-400" />
                           <span>{item.departmentName}</span>
                         </span>
                         <span>&bull;</span>
                         <span className="inline-flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-400" />
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
                           <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 self-start sm:self-center pt-2 sm:pt-0">
+                    <div className="flex items-center gap-2 self-start sm:self-center pt-2 sm:pt-0 shrink-0">
                       <button
                         type="button"
                         onClick={() => setSelectedAppId(item.id)}
-                        className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-[#2563EB] text-[#2563EB] text-xs font-semibold rounded-xl transition flex items-center gap-1 shadow-xs"
+                        className="px-4 py-2 bg-white border border-slate-200 hover:border-[#2563EB] text-[#2563EB] text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>View Details</span>
@@ -451,9 +447,10 @@ export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({ onNavigate }
                             const full = await applicationApi.getApplicationById(item.id);
                             handleOpenWizard(full);
                           }}
-                          className="px-3.5 py-1.5 bg-[#2563EB] text-white text-xs font-semibold rounded-xl hover:bg-[#1D4ED8] transition"
+                          className="px-4 py-2 bg-[#2563EB] text-white text-xs font-bold rounded-xl hover:bg-[#1D4ED8] transition flex items-center gap-1"
                         >
-                          Continue Draft →
+                          <span>Continue Draft</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </button>
                       )}
                     </div>
