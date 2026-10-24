@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Mic,
   Info,
-  Layers,
   Sparkles,
   X,
   Building2,
@@ -100,104 +99,89 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
   };
 
   return (
-    <div className="w-full space-y-6 animate-in fade-in duration-300">
+    <div className="w-full space-y-6 max-w-6xl mx-auto pb-8 animate-in fade-in duration-300">
       {/* HEADER BANNER */}
-      <div className="bg-gradient-to-r from-[#101828] to-[#1E293B] rounded-2xl p-6 md:p-8 text-white shadow-md relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#2563EB]/30 text-blue-200 border border-[#2563EB]/40 mb-3">
+      <div className="bg-gradient-to-br from-[#101828] via-[#162544] to-[#1E3A8A] rounded-3xl p-6 sm:p-8 text-white shadow-md relative overflow-hidden">
+        <div className="relative z-10 max-w-2xl space-y-2.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#2563EB]/40 text-[#EAF2FF] border border-[#2563EB]/50">
             <Sparkles className="w-3.5 h-3.5 text-blue-300" />
-            {language === 'en' ? 'Official Citizen Services' : 'అధికారిక పౌర సేవలు'}
-          </span>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-            {language === 'en' ? 'Explore Government Licences & Permits' : 'ప్రభుత్వ లైసెన్సులు & అనుమతులను శోధించండి'}
+            <span>Official Government Catalogue</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            {language === 'en' ? 'Explore Government Licenses & Permits' : 'ప్రభుత్వ లైసెన్సులు & అనుమతులను శోధించండి'}
           </h1>
-          <p className="text-slate-300 text-sm md:text-base mt-2 leading-relaxed">
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
             {language === 'en'
               ? 'Unified portal for end-to-end digital applications with AI-assisted pre-screening, dynamic checklist verification, and real-time SLA tracking.'
               : 'ఆర్టిఫిషియల్ ఇంటెలిజెన్స్ ముందస్తు తనిఖీ మరియు రియల్-టైమ్ ట్రాకింగ్‌తో డిజిటల్ దరఖాస్తులను సమర్పించండి.'}
           </p>
         </div>
-
-        {/* Language Switcher in Header */}
-        <div className="mt-4 md:mt-0 md:absolute md:top-8 md:right-8 flex items-center bg-white/10 backdrop-blur-md p-1 rounded-xl border border-white/15">
-          <button
-            type="button"
-            onClick={() => setLanguage('en')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
-              language === 'en' ? 'bg-[#2563EB] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            English
-          </button>
-          <button
-            type="button"
-            onClick={() => setLanguage('te')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
-              language === 'te' ? 'bg-[#2563EB] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            తెలుగు
-          </button>
-        </div>
       </div>
 
-      {/* SEARCH AND CATEGORY FILTER TABS */}
-      <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        {/* Search Input Bar */}
-        <div className="relative">
-          <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={
-              language === 'en'
-                ? 'Search services by name, keyword, or license type (e.g. Driving, Trade, Municipal)...'
-                : 'సేవల పేరు లేదా లైసెన్స్ రకాన్ని శోధించండి...'
-            }
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:bg-white transition text-[#101828] placeholder-slate-400 font-medium"
-          />
-          {searchQuery && (
+      {/* SEARCH AND DEPARTMENT FILTER BAR */}
+      <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+          {/* Search Input */}
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={language === 'en' ? 'Search by service name, code, or department...' : 'పేరు లేదా కోడ్ ద్వారా శోధించండి...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs text-[#0F172A] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:bg-white transition"
+            />
+          </div>
+
+          {/* Bilingual Switcher inside Catalogue */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold self-end sm:self-auto">
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-full w-5 h-5 flex items-center justify-center font-bold"
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                language === 'en' ? 'bg-white text-[#2563EB] shadow-xs' : 'text-[#64748B] hover:text-[#0F172A]'
+              }`}
             >
-              &times;
+              English
             </button>
-          )}
+            <button
+              type="button"
+              onClick={() => setLanguage('te')}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                language === 'te' ? 'bg-white text-[#2563EB] shadow-xs' : 'text-[#64748B] hover:text-[#0F172A]'
+              }`}
+            >
+              తెలుగు
+            </button>
+          </div>
         </div>
 
         {/* Department Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
           <button
             type="button"
             onClick={() => setSelectedDeptId(null)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full font-bold transition whitespace-nowrap ${
               selectedDeptId === null
                 ? 'bg-[#101828] text-white shadow-xs'
-                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                : 'bg-slate-100 hover:bg-slate-200 text-[#64748B]'
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{language === 'en' ? 'All Services' : 'అన్ని సేవలు'}</span>
-            <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-inherit font-extrabold">
-              {services.length}
-            </span>
+            All Services ({services.length})
           </button>
-
           {departments.map((dept) => {
             const Icon = getDepartmentIcon(dept.name);
             const isSelected = selectedDeptId === dept.id;
+
             return (
               <button
                 key={dept.id}
                 type="button"
                 onClick={() => setSelectedDeptId(dept.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-full font-bold transition flex items-center gap-1.5 whitespace-nowrap ${
                   isSelected
                     ? 'bg-[#2563EB] text-white shadow-xs'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    : 'bg-slate-100 hover:bg-slate-200 text-[#64748B]'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -210,32 +194,32 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
 
       {/* ERROR NOTICE */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-sm flex items-center gap-2">
-          <Info className="w-4 h-4 shrink-0 text-rose-600" />
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-[#B91C1C] text-xs flex items-center gap-2">
+          <Info className="w-4 h-4 shrink-0 text-[#B91C1C]" />
           <span>{error}</span>
         </div>
       )}
 
       {/* SERVICE CARDS GRID */}
       {loading ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
+        <div className="p-12 text-center bg-white rounded-3xl border border-slate-200">
           <div className="w-8 h-8 border-3 border-[#2563EB] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-600">
+          <p className="text-xs font-medium text-slate-500">
             {language === 'en' ? 'Loading service catalog...' : 'సేవల కేటలాగ్ లోడ్ అవుతోంది...'}
           </p>
         </div>
       ) : services.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-slate-200">
-          <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 space-y-3">
+          <FileText className="w-10 h-10 text-slate-300 mx-auto" />
           <p className="text-sm font-bold text-[#101828]">No licensing services matched your criteria.</p>
-          <p className="text-xs text-slate-500 mt-1">Try clearing your search query or selecting "All Services".</p>
+          <p className="text-xs text-[#64748B]">Try clearing your search query or selecting "All Services".</p>
           <button
             type="button"
             onClick={() => {
               setSearchQuery('');
               setSelectedDeptId(null);
             }}
-            className="mt-4 px-4 py-2 bg-[#2563EB] text-white text-xs font-bold rounded-xl hover:bg-[#1D4ED8] transition"
+            className="mt-2 px-4 py-2 bg-[#2563EB] text-white text-xs font-bold rounded-xl hover:bg-[#1D4ED8] transition"
           >
             Reset Filters
           </button>
@@ -248,13 +232,13 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
             return (
               <div
                 key={service.id}
-                className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:border-[#2563EB] hover:shadow-md transition-all flex flex-col justify-between group"
+                className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs hover:border-[#2563EB] hover:shadow-md transition-all flex flex-col justify-between group"
               >
                 <div>
                   {/* Top Badges */}
                   <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#EAF2FF] text-[#2563EB]">
-                      <DeptIcon className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#EAF2FF] text-[#2563EB]">
+                      <DeptIcon className="w-3.5 h-3.5" />
                       <span>{service.departmentName || 'Government Department'}</span>
                     </span>
                     <span className="text-[11px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
@@ -263,15 +247,15 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-lg font-bold text-[#101828] group-hover:text-[#2563EB] transition-colors line-clamp-1">
+                  <h3 className="text-base font-extrabold text-[#101828] group-hover:text-[#2563EB] transition-colors line-clamp-1">
                     {service.name}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-[#64748B] mt-1.5 line-clamp-2 leading-relaxed">
                     {service.description || 'Complete your digital application online with verified document review.'}
                   </p>
 
                   {/* Metadata Chips */}
-                  <div className="mt-4 grid grid-cols-2 gap-2 p-3 bg-[#F8FAFC] rounded-xl border border-slate-100 text-xs">
+                  <div className="mt-4 grid grid-cols-2 gap-2 p-3 bg-[#F8FAFC] rounded-2xl border border-slate-100 text-xs">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-slate-400 shrink-0" />
                       <div>
@@ -299,7 +283,7 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
                     className="w-full py-2.5 px-4 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl text-xs transition shadow-xs flex items-center justify-center gap-2 group/btn"
                   >
                     <span>{language === 'en' ? 'Start Application' : 'దరఖాస్తు ప్రారంభించండి'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -318,10 +302,10 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
                       type="button"
                       onClick={() => handleViewDetails(service.id)}
                       disabled={detailLoading}
-                      className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1"
+                      className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-[#0F172A] font-bold rounded-xl text-xs transition flex items-center justify-center gap-1"
                     >
                       <FileText className="w-3.5 h-3.5 text-slate-500" />
-                      <span>{language === 'en' ? 'Checklist' : 'వివరాలు'}</span>
+                      <span>{language === 'en' ? 'Requirements' : 'వివరాలు'}</span>
                     </button>
                   </div>
                 </div>
@@ -359,7 +343,7 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
               {/* Quick Info Bar */}
               <div className="grid grid-cols-4 gap-2 bg-[#F8FAFC] p-3.5 rounded-2xl border border-slate-200 text-center">
                 <div>
-                  <span className="text-[10px] text-slate-400 font-semibold block">Fee</span>
+                  <span className="text-[10px] text-slate-400 font-semibold block">Govt Fee</span>
                   <span className="text-sm font-extrabold text-[#15803D]">
                     ₹{activeServiceDetail.sampleFee.toFixed(2)}
                   </span>
@@ -454,23 +438,23 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
               </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="p-4 bg-[#F8FAFC] border-t border-slate-200 flex items-center justify-end gap-3">
+            {/* Modal Footer */}
+            <div className="p-4 bg-[#F8FAFC] border-t border-slate-200 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveServiceDetail(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition"
+                className="px-4 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  const sId = activeServiceDetail.id;
+                  const id = activeServiceDetail.id;
                   setActiveServiceDetail(null);
-                  handleStartApply(sId);
+                  handleStartApply(id);
                 }}
-                className="px-5 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl transition shadow-xs flex items-center gap-1.5"
+                className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs"
               >
                 <span>Proceed to Apply</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -480,25 +464,21 @@ export const ServiceCatalogue: React.FC<ServiceCatalogueProps> = ({ onStartAppli
         </div>
       )}
 
-      {/* Guided Application Wizard Screen (Screen 7, 8, 9, 10) */}
+      {/* Guided Application Wizard Dialog */}
       {wizardServiceId && (
         <ApplicationWizard
           initialServiceId={wizardServiceId}
           onClose={() => setWizardServiceId(null)}
-          onApplicationCompleted={() => {
-            setWizardServiceId(null);
-            loadServices();
-          }}
+          onApplicationCompleted={() => setWizardServiceId(null)}
         />
       )}
 
       {/* Voice Assistant Modal */}
       {voiceModalService && (
         <VoiceAssistantModal
-          isOpen={!!voiceModalService}
+          isOpen={true}
           serviceCode={voiceModalService.code}
           serviceName={voiceModalService.name}
-          initialLanguage={language}
           onClose={() => setVoiceModalService(null)}
           onFormUpdate={() => {}}
         />
