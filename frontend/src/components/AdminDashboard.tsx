@@ -4,6 +4,7 @@ import { AuditLogEntry, SystemStats } from '../types/admin';
 import { ServiceSummary, Department, ServiceCreateRequest } from '../types/service';
 import { adminApi } from '../services/adminApi';
 import { officerApi } from '../services/officerApi';
+import { StatusBadge, MetricCard } from './ui/designSystem';
 import {
   ShieldCheck,
   Users,
@@ -20,6 +21,10 @@ import {
   History,
   TrendingUp,
   FlaskConical,
+  Clock,
+  Sparkles,
+  FileCode,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { ResearchBenchmarkView } from './ResearchBenchmarkView';
 
@@ -190,18 +195,18 @@ export const AdminDashboard: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Admin Top Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Admin Top Header Banner */}
+      <div className="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900">Administrator Control Center</h1>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1 text-purple-600" /> Platform Admin
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-black text-[#101828] tracking-tight">Administrator Control Center</h1>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EAF2FF] text-[#2563EB] border border-[#2563EB]/20">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" /> Platform Governance
             </span>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            System-wide oversight, cross-department queue surveillance, catalogue provisioning, and audit logs.
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+            Real-time cross-department queue oversight, automated SLA surveillance, dynamic catalogue provisioning, and immutable system audit logs.
           </p>
         </div>
 
@@ -212,88 +217,84 @@ export const AdminDashboard: React.FC = () => {
             if (activeTab === 'catalogue') loadServices();
             if (activeTab === 'audit') loadAuditLogs();
           }}
-          className="inline-flex items-center px-3.5 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 shadow-sm"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:border-[#2563EB] hover:bg-slate-50 rounded-xl text-xs font-bold text-[#101828] shadow-xs transition"
         >
-          <RefreshCw className="w-4 h-4 mr-2 text-slate-500" /> Refresh Data
+          <RefreshCw className="w-3.5 h-3.5 text-[#2563EB]" />
+          <span>Refresh All Metrics</span>
         </button>
       </div>
 
-      {/* Global Stat Cards */}
+      {/* Global Executive Metric Cards */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Applications</span>
-              <FileText className="w-5 h-5 text-indigo-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">{stats.totalApplications}</p>
-            <span className="text-xs text-slate-400 mt-1 block">Cross-department filings</span>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            label="Total Applications"
+            value={stats.totalApplications}
+            helperText="Cross-department filings"
+            icon={FileSpreadsheet}
+            tone="blue"
+          />
 
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Registered Users</span>
-              <Users className="w-5 h-5 text-blue-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">{stats.totalUsers}</p>
-            <span className="text-xs text-slate-500 mt-1 block">
-              {stats.totalCitizens} citizens • {stats.totalOfficers} officers
-            </span>
-          </div>
+          <MetricCard
+            label="Active Citizens & Officers"
+            value={stats.totalUsers}
+            helperText={`${stats.totalCitizens} citizens • ${stats.totalOfficers} officers`}
+            icon={Users}
+            tone="default"
+          />
 
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Departments</span>
-              <Building className="w-5 h-5 text-amber-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">{stats.totalDepartments}</p>
-            <span className="text-xs text-slate-400 mt-1 block">Configured ministries</span>
-          </div>
+          <MetricCard
+            label="Ministries & Depts"
+            value={stats.totalDepartments}
+            helperText="Configured jurisdictions"
+            icon={Building}
+            tone="amber"
+          />
 
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Service Catalogue</span>
-              <Layers className="w-5 h-5 text-emerald-500" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900 mt-2">{stats.totalServices}</p>
-            <span className="text-xs text-slate-400 mt-1 block">Active licensing schemes</span>
-          </div>
+          <MetricCard
+            label="Service Catalogue"
+            value={stats.totalServices}
+            helperText="Live licensing schemes"
+            icon={Layers}
+            tone="green"
+          />
         </div>
       )}
 
-      {/* Notifications */}
+      {/* Alerts */}
       {errorMsg && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 shrink-0" />
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs font-medium text-rose-800 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 shrink-0 text-[#B91C1C]" />
             <span>{errorMsg}</span>
           </div>
-          <button onClick={() => setErrorMsg(null)} className="text-rose-500 hover:text-rose-700">
+          <button onClick={() => setErrorMsg(null)} className="text-rose-500 hover:text-rose-700 p-1">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
+
       {successMsg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 shrink-0" />
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-medium text-emerald-800 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-[#15803D]" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700">
+          <button onClick={() => setSuccessMsg(null)} className="text-emerald-500 hover:text-emerald-700 p-1">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Navigation Tabs */}
-      <div className="border-b border-slate-200 overflow-x-auto scrollbar-none">
-        <nav className="flex space-x-6 min-w-max pb-px">
+      <div className="bg-white rounded-2xl border border-slate-200 p-1.5 shadow-xs overflow-x-auto scrollbar-none">
+        <nav className="flex space-x-1 min-w-max">
           <button
             onClick={() => setActiveTab('applications')}
-            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
+            className={`py-2.5 px-4 rounded-xl font-bold text-xs inline-flex items-center gap-2 transition ${
               activeTab === 'applications'
-                ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                ? 'bg-[#101828] text-white shadow-xs'
+                : 'text-slate-600 hover:text-[#101828] hover:bg-slate-100'
             }`}
           >
             <FileText className="w-4 h-4" /> Applications Oversight
@@ -301,10 +302,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('catalogue')}
-            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
+            className={`py-2.5 px-4 rounded-xl font-bold text-xs inline-flex items-center gap-2 transition ${
               activeTab === 'catalogue'
-                ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                ? 'bg-[#101828] text-white shadow-xs'
+                : 'text-slate-600 hover:text-[#101828] hover:bg-slate-100'
             }`}
           >
             <Layers className="w-4 h-4" /> Service Catalogue
@@ -312,10 +313,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('audit')}
-            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
+            className={`py-2.5 px-4 rounded-xl font-bold text-xs inline-flex items-center gap-2 transition ${
               activeTab === 'audit'
-                ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                ? 'bg-[#101828] text-white shadow-xs'
+                : 'text-slate-600 hover:text-[#101828] hover:bg-slate-100'
             }`}
           >
             <History className="w-4 h-4" /> System Audit Trail
@@ -323,10 +324,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
+            className={`py-2.5 px-4 rounded-xl font-bold text-xs inline-flex items-center gap-2 transition ${
               activeTab === 'analytics'
-                ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                ? 'bg-[#101828] text-white shadow-xs'
+                : 'text-slate-600 hover:text-[#101828] hover:bg-slate-100'
             }`}
           >
             <TrendingUp className="w-4 h-4" /> Status Breakdown
@@ -334,10 +335,10 @@ export const AdminDashboard: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('benchmark')}
-            className={`py-3 px-2 border-b-2 font-bold text-xs uppercase tracking-wider inline-flex items-center gap-2 transition ${
+            className={`py-2.5 px-4 rounded-xl font-bold text-xs inline-flex items-center gap-2 transition ${
               activeTab === 'benchmark'
-                ? 'border-[#2563EB] text-[#2563EB]'
-                : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'
+                ? 'bg-[#101828] text-white shadow-xs'
+                : 'text-slate-600 hover:text-[#101828] hover:bg-slate-100'
             }`}
           >
             <FlaskConical className="w-4 h-4" /> Research & Benchmarks
@@ -349,24 +350,24 @@ export const AdminDashboard: React.FC = () => {
       {activeTab === 'applications' && (
         <div className="space-y-4">
           {/* Filter Bar */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search reference, applicant, email..."
+                placeholder="Search reference number, applicant name, email..."
                 value={appSearch}
                 onChange={(e) => setAppSearch(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadApplications()}
-                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
               <select
                 value={selectedDeptId}
                 onChange={(e) => setSelectedDeptId(e.target.value)}
-                className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white text-slate-700"
+                className="border border-slate-200 rounded-xl text-xs px-3.5 py-2.5 bg-white text-[#101828] font-medium focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="ALL">All Departments</option>
                 {departments.map((d) => (
@@ -379,7 +380,7 @@ export const AdminDashboard: React.FC = () => {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white text-slate-700"
+                className="border border-slate-200 rounded-xl text-xs px-3.5 py-2.5 bg-white text-[#101828] font-medium focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="DRAFT">Draft</option>
@@ -391,31 +392,33 @@ export const AdminDashboard: React.FC = () => {
 
               <button
                 onClick={loadApplications}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm"
+                className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-xs font-bold shadow-xs transition"
               >
-                Search
+                Apply Filter
               </button>
             </div>
           </div>
 
           {/* Applications Table */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
             {appsLoading ? (
-              <div className="p-12 text-center text-slate-500">
-                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-indigo-600 mb-3" />
-                <p>Loading platform applications...</p>
+              <div className="p-16 text-center text-slate-500">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#2563EB] mb-3" />
+                <p className="text-xs font-semibold text-slate-700">Loading cross-department applications...</p>
               </div>
             ) : applications.length === 0 ? (
-              <div className="p-12 text-center text-slate-500">
-                <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <h3 className="text-base font-semibold text-slate-800">No Applications Found</h3>
-                <p className="text-sm text-slate-500 mt-1">Try adjusting your department or status filters.</p>
+              <div className="p-16 text-center text-slate-500">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                  <FileText className="w-7 h-7" />
+                </div>
+                <h3 className="text-sm font-bold text-[#101828]">No Applications Found</h3>
+                <p className="text-xs text-slate-500 mt-1">Try adjusting your department, status, or search filters.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
+                <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <tr className="bg-[#F8FAFC] border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                       <th className="py-3 px-4">Ref Number</th>
                       <th className="py-3 px-4">Department</th>
                       <th className="py-3 px-4">Service</th>
@@ -424,41 +427,32 @@ export const AdminDashboard: React.FC = () => {
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-100">
                     {applications.map((app) => (
-                      <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-4 font-mono font-medium text-slate-900">{app.referenceNumber}</td>
-                        <td className="py-3 px-4 text-slate-700">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-800">
+                      <tr key={app.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold text-[#2563EB]">
+                          {app.referenceNumber}
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-700">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">
                             {app.departmentName}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-slate-700">{app.serviceName}</td>
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-slate-800">{app.citizenName}</div>
-                          <div className="text-xs text-slate-400">{app.citizenEmail}</div>
+                        <td className="py-3.5 px-4 font-semibold text-[#101828]">{app.serviceName}</td>
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-[#101828]">{app.citizenName}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">{app.citizenEmail}</div>
                         </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                              app.status === 'APPROVED'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : app.status === 'REJECTED'
-                                ? 'bg-rose-100 text-rose-800'
-                                : app.status === 'UNDER_VERIFICATION'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}
-                          >
-                            {app.status}
-                          </span>
+                        <td className="py-3.5 px-4">
+                          <StatusBadge status={app.status} />
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right">
                           <button
                             onClick={() => handleInspect(app.id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:border-[#2563EB] hover:bg-[#EAF2FF] rounded-lg text-xs font-bold text-[#101828] shadow-xs transition"
                           >
-                            <Eye className="w-3.5 h-3.5 mr-1 text-slate-500" /> Dossier
+                            <Eye className="w-3.5 h-3.5 text-[#2563EB]" />
+                            <span>Dossier</span>
                           </button>
                         </td>
                       </tr>
@@ -474,58 +468,67 @@ export const AdminDashboard: React.FC = () => {
       {/* TAB 2: Dynamic Service Catalogue Manager */}
       {activeTab === 'catalogue' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900">Service Catalogue Provisioning</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <div>
+              <h2 className="text-base font-extrabold text-[#101828]">Service Catalogue Provisioning</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Define new licensing schemes, fee structures, and SLA timeframes</p>
+            </div>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold shadow-sm"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-xs font-bold shadow-xs transition"
             >
-              <Plus className="w-4 h-4 mr-1.5" /> Provision New Service
+              <Plus className="w-4 h-4" /> Provision New Service
             </button>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
             {servicesLoading ? (
-              <div className="p-12 text-center text-slate-500">
-                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-indigo-600 mb-2" />
-                <p>Loading service catalogue...</p>
+              <div className="p-16 text-center text-slate-500">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#2563EB] mb-2" />
+                <p className="text-xs font-semibold text-slate-700">Loading service catalogue...</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
+                <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <tr className="bg-[#F8FAFC] border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                       <th className="py-3 px-4">Code</th>
                       <th className="py-3 px-4">Service Name</th>
                       <th className="py-3 px-4">Department</th>
                       <th className="py-3 px-4">Fee (₹)</th>
-                      <th className="py-3 px-4">SLA (Days)</th>
+                      <th className="py-3 px-4">SLA Timeframe</th>
                       <th className="py-3 px-4">Status</th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-100">
                     {services.map((srv) => (
-                      <tr key={srv.id} className="hover:bg-slate-50">
-                        <td className="py-3 px-4 font-mono font-medium text-slate-900">{srv.code}</td>
-                        <td className="py-3 px-4 font-medium text-slate-800">{srv.name}</td>
-                        <td className="py-3 px-4 text-slate-600">{srv.departmentName}</td>
-                        <td className="py-3 px-4 text-slate-700">₹{srv.sampleFee}</td>
-                        <td className="py-3 px-4 text-slate-700">{srv.processingTimeDays} days</td>
-                        <td className="py-3 px-4">
+                      <tr key={srv.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3.5 px-4 font-mono font-bold text-[#101828]">{srv.code}</td>
+                        <td className="py-3.5 px-4 font-bold text-[#101828]">{srv.name}</td>
+                        <td className="py-3.5 px-4 text-slate-600 font-medium">{srv.departmentName}</td>
+                        <td className="py-3.5 px-4 font-bold text-[#101828]">₹{srv.sampleFee}</td>
+                        <td className="py-3.5 px-4 text-slate-600 font-medium">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{srv.processingTimeDays} working days</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${
-                              srv.active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              srv.active ? 'bg-emerald-50 text-[#15803D] border border-emerald-200' : 'bg-slate-100 text-slate-600'
                             }`}
                           >
+                            <span className={`w-1.5 h-1.5 rounded-full ${srv.active ? 'bg-[#15803D]' : 'bg-slate-400'}`} />
                             {srv.active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right">
                           {srv.active && (
                             <button
                               onClick={() => handleDeactivateService(srv.id)}
-                              className="text-xs text-rose-600 hover:text-rose-800 font-medium"
+                              className="text-xs text-[#B91C1C] hover:text-red-800 font-bold hover:underline"
                             >
                               Deactivate
                             </button>
@@ -544,36 +547,38 @@ export const AdminDashboard: React.FC = () => {
       {/* TAB 3: System Audit Trail Inspector */}
       {activeTab === 'audit' && (
         <div className="space-y-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="relative flex-1 w-full max-w-md">
+              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search audit actions, actors, resources..."
                 value={auditSearch}
                 onChange={(e) => setAuditSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               />
             </div>
-            <span className="text-xs text-slate-500">Showing last 100 immutable audit entries</span>
+            <span className="text-[11px] font-semibold text-slate-500">
+              Showing last 100 immutable audit entries
+            </span>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
             {auditLoading ? (
-              <div className="p-12 text-center text-slate-500">
-                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-indigo-600 mb-2" />
-                <p>Loading audit trail...</p>
+              <div className="p-16 text-center text-slate-500">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-[#2563EB] mb-2" />
+                <p className="text-xs font-semibold text-slate-700">Loading audit trail...</p>
               </div>
             ) : filteredAuditLogs.length === 0 ? (
-              <div className="p-12 text-center text-slate-500">
-                <History className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-sm">No audit records found.</p>
+              <div className="p-16 text-center text-slate-500">
+                <History className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-700">No audit records found.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-600 uppercase tracking-wider">
+                    <tr className="bg-[#F8FAFC] border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                       <th className="py-3 px-4">Timestamp</th>
                       <th className="py-3 px-4">Actor</th>
                       <th className="py-3 px-4">Action</th>
@@ -582,26 +587,26 @@ export const AdminDashboard: React.FC = () => {
                       <th className="py-3 px-4">Details</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 font-mono">
+                  <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
                     {filteredAuditLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50">
-                        <td className="py-2.5 px-4 text-slate-500 whitespace-nowrap">
+                      <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
                           {new Date(log.createdAt).toLocaleString()}
                         </td>
-                        <td className="py-2.5 px-4 font-sans">
-                          <div className="font-semibold text-slate-800">{log.actorName}</div>
-                          <div className="text-[10px] text-slate-400">{log.actorEmail}</div>
+                        <td className="py-3 px-4 font-sans">
+                          <div className="font-bold text-[#101828]">{log.actorName}</div>
+                          <div className="text-[10px] text-slate-400 font-mono">{log.actorEmail}</div>
                         </td>
-                        <td className="py-2.5 px-4">
-                          <span className="inline-flex px-2 py-0.5 rounded font-bold text-[11px] bg-slate-100 text-slate-800">
+                        <td className="py-3 px-4">
+                          <span className="inline-flex px-2 py-0.5 rounded-md font-bold text-[10px] bg-slate-100 text-slate-800">
                             {log.action}
                           </span>
                         </td>
-                        <td className="py-2.5 px-4 text-slate-600">
+                        <td className="py-3 px-4 text-slate-700 font-semibold">
                           {log.resourceType} {log.resourceId ? `#${log.resourceId}` : ''}
                         </td>
-                        <td className="py-2.5 px-4 text-slate-500">{log.ipAddress || '127.0.0.1'}</td>
-                        <td className="py-2.5 px-4 text-slate-600 font-sans truncate max-w-xs">{log.details || '—'}</td>
+                        <td className="py-3 px-4 text-slate-500 font-mono">{log.ipAddress || '127.0.0.1'}</td>
+                        <td className="py-3 px-4 text-slate-600 font-sans truncate max-w-xs">{log.details || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -615,24 +620,43 @@ export const AdminDashboard: React.FC = () => {
       {/* TAB 4: Status Breakdown & Platform Health */}
       {activeTab === 'analytics' && stats && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="text-base font-bold text-slate-900 mb-4">Application Lifecycle Pipeline Breakdown</h3>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-5 h-5 text-[#2563EB]" />
+              <h3 className="text-base font-extrabold text-[#101828]">Application Lifecycle Pipeline Breakdown</h3>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {Object.entries(stats.statusBreakdown || {}).map(([st, cnt]) => {
                 const percentage =
                   stats.totalApplications > 0
                     ? Math.round((cnt / stats.totalApplications) * 100)
                     : 0;
+
+                const getStatusColor = (status: string) => {
+                  switch (status) {
+                    case 'APPROVED':
+                      return { text: 'text-[#15803D]', bar: 'bg-[#15803D]' };
+                    case 'REJECTED':
+                      return { text: 'text-[#B91C1C]', bar: 'bg-[#B91C1C]' };
+                    case 'UNDER_VERIFICATION':
+                      return { text: 'text-[#B45309]', bar: 'bg-[#B45309]' };
+                    default:
+                      return { text: 'text-[#2563EB]', bar: 'bg-[#2563EB]' };
+                  }
+                };
+
+                const colors = getStatusColor(st);
+
                 return (
-                  <div key={st} className="p-4 rounded-xl border border-slate-200 bg-slate-50">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{st}</span>
+                  <div key={st} className="p-4 rounded-2xl border border-slate-200 bg-[#F8FAFC] shadow-xs">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider block">{st}</span>
                     <div className="flex items-baseline justify-between mt-2">
-                      <span className="text-2xl font-extrabold text-slate-900">{cnt}</span>
-                      <span className="text-xs font-semibold text-slate-500">{percentage}%</span>
+                      <span className={`text-2xl font-black ${colors.text}`}>{cnt}</span>
+                      <span className="text-xs font-bold text-slate-500">{percentage}%</span>
                     </div>
-                    <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div className="w-full bg-slate-200 h-2 rounded-full mt-3 overflow-hidden">
                       <div
-                        className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                        className={`${colors.bar} h-full rounded-full transition-all duration-500`}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
@@ -652,18 +676,25 @@ export const AdminDashboard: React.FC = () => {
       {/* Create Service Modal */}
       {isCreateModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
           role="dialog"
           aria-modal="true"
           aria-labelledby="provision-modal-title"
         >
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 id="provision-modal-title" className="text-lg font-bold text-slate-900">Provision New Service</h3>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <h3 id="provision-modal-title" className="text-base font-extrabold text-[#101828]">
+                  Provision New Licensing Service
+                </h3>
+              </div>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
                 aria-label="Close provision modal"
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 hover:text-[#101828] p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -671,7 +702,9 @@ export const AdminDashboard: React.FC = () => {
 
             <form onSubmit={handleCreateService} className="space-y-4">
               <div>
-                <label htmlFor="srv-code" className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Code</label>
+                <label htmlFor="srv-code" className="block text-xs font-bold text-[#101828] uppercase mb-1">
+                  Service Code
+                </label>
                 <input
                   type="text"
                   id="srv-code"
@@ -680,12 +713,14 @@ export const AdminDashboard: React.FC = () => {
                   placeholder="e.g. SRV_PROPERTY_TAX"
                   value={newService.code}
                   onChange={(e) => setNewService({ ...newService, code: e.target.value })}
-                  className="w-full text-sm border border-slate-300 rounded-lg p-2 font-mono uppercase"
+                  className="w-full text-xs font-mono uppercase border border-slate-200 rounded-xl p-3 bg-[#F8FAFC] focus:bg-white focus:ring-2 focus:ring-[#2563EB] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="srv-name" className="block text-xs font-bold text-slate-700 uppercase mb-1">Service Name</label>
+                <label htmlFor="srv-name" className="block text-xs font-bold text-[#101828] uppercase mb-1">
+                  Service Name
+                </label>
                 <input
                   type="text"
                   id="srv-name"
@@ -694,18 +729,20 @@ export const AdminDashboard: React.FC = () => {
                   placeholder="e.g. Property Tax Assessment License"
                   value={newService.name}
                   onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                  className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                  className="w-full text-xs border border-slate-200 rounded-xl p-3 bg-[#F8FAFC] focus:bg-white focus:ring-2 focus:ring-[#2563EB] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label htmlFor="srv-dept" className="block text-xs font-bold text-slate-700 uppercase mb-1">Department</label>
+                <label htmlFor="srv-dept" className="block text-xs font-bold text-[#101828] uppercase mb-1">
+                  Governing Department
+                </label>
                 <select
                   id="srv-dept"
                   name="departmentId"
                   value={newService.departmentId}
                   onChange={(e) => setNewService({ ...newService, departmentId: Number(e.target.value) })}
-                  className="w-full text-sm border border-slate-300 rounded-lg p-2 bg-white"
+                  className="w-full text-xs border border-slate-200 rounded-xl p-3 bg-white focus:ring-2 focus:ring-[#2563EB] focus:outline-none text-[#101828] font-semibold"
                 >
                   {departments.map((d) => (
                     <option key={d.id} value={d.id}>
@@ -717,7 +754,9 @@ export const AdminDashboard: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="srv-fee" className="block text-xs font-bold text-slate-700 uppercase mb-1">Fee (₹)</label>
+                  <label htmlFor="srv-fee" className="block text-xs font-bold text-[#101828] uppercase mb-1">
+                    Sample Fee (₹)
+                  </label>
                   <input
                     type="number"
                     id="srv-fee"
@@ -725,11 +764,13 @@ export const AdminDashboard: React.FC = () => {
                     min="0"
                     value={newService.sampleFee}
                     onChange={(e) => setNewService({ ...newService, sampleFee: Number(e.target.value) })}
-                    className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                    className="w-full text-xs border border-slate-200 rounded-xl p-3 bg-[#F8FAFC] focus:bg-white focus:ring-2 focus:ring-[#2563EB] focus:outline-none font-bold"
                   />
                 </div>
                 <div>
-                  <label htmlFor="srv-sla" className="block text-xs font-bold text-slate-700 uppercase mb-1">SLA Days</label>
+                  <label htmlFor="srv-sla" className="block text-xs font-bold text-[#101828] uppercase mb-1">
+                    SLA (Working Days)
+                  </label>
                   <input
                     type="number"
                     id="srv-sla"
@@ -737,34 +778,36 @@ export const AdminDashboard: React.FC = () => {
                     min="1"
                     value={newService.processingTimeDays}
                     onChange={(e) => setNewService({ ...newService, processingTimeDays: Number(e.target.value) })}
-                    className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                    className="w-full text-xs border border-slate-200 rounded-xl p-3 bg-[#F8FAFC] focus:bg-white focus:ring-2 focus:ring-[#2563EB] focus:outline-none font-bold"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="srv-desc" className="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+                <label htmlFor="srv-desc" className="block text-xs font-bold text-[#101828] uppercase mb-1">
+                  Description & Eligibility Criteria
+                </label>
                 <textarea
                   id="srv-desc"
                   name="description"
                   rows={2}
                   value={newService.description}
                   onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                  className="w-full text-sm border border-slate-300 rounded-lg p-2"
+                  className="w-full text-xs border border-slate-200 rounded-xl p-3 bg-[#F8FAFC] focus:bg-white focus:ring-2 focus:ring-[#2563EB] focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 border rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold"
+                  className="px-5 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-xs font-bold shadow-md transition"
                 >
                   Provision Service
                 </button>
@@ -777,62 +820,74 @@ export const AdminDashboard: React.FC = () => {
       {/* Inspect Dossier Modal (Read-Only Admin View) */}
       {inspectedApp && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900 bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
           role="dialog"
           aria-modal="true"
           aria-labelledby="admin-inspect-title"
         >
-          <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b flex items-center justify-between bg-slate-50">
-              <h3 id="admin-inspect-title" className="text-base font-bold text-slate-900">
-                Admin Dossier Inspection: {inspectedApp.referenceNumber}
-              </h3>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-[#F8FAFC]">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Admin Surveillance Dossier</span>
+                <h3 id="admin-inspect-title" className="text-base font-extrabold text-[#101828] font-mono">
+                  {inspectedApp.referenceNumber}
+                </h3>
+              </div>
               <button
                 onClick={() => setInspectedApp(null)}
                 aria-label="Close inspection dialog"
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 hover:text-[#101828] p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-sm">
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border">
+            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#F8FAFC] p-4 rounded-2xl border border-slate-200">
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-semibold">Service</span>
-                  <p className="font-semibold text-slate-800">{inspectedApp.serviceName}</p>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Service</span>
+                  <p className="font-bold text-[#101828] mt-0.5">{inspectedApp.serviceName}</p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-semibold">Department</span>
-                  <p className="font-semibold text-slate-800">{inspectedApp.departmentName}</p>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Department</span>
+                  <p className="font-bold text-[#101828] mt-0.5">{inspectedApp.departmentName}</p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-semibold">Applicant</span>
-                  <p className="font-semibold text-slate-800">{inspectedApp.citizenName} ({inspectedApp.citizenEmail})</p>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Applicant</span>
+                  <p className="font-bold text-[#101828] mt-0.5">{inspectedApp.citizenName}</p>
+                  <p className="text-[10px] text-slate-400 font-mono">{inspectedApp.citizenEmail}</p>
                 </div>
                 <div>
-                  <span className="text-xs text-slate-400 uppercase font-semibold">Status</span>
-                  <p className="font-semibold text-indigo-700">{inspectedApp.status}</p>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold block">Lifecycle Status</span>
+                  <div className="mt-1">
+                    <StatusBadge status={inspectedApp.status} />
+                  </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Form Data Payload</h4>
-                <pre className="bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs overflow-x-auto">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileCode className="w-4 h-4 text-[#2563EB]" />
+                  <h4 className="text-xs font-bold text-[#101828] uppercase tracking-wider">Citizen Form Payload</h4>
+                </div>
+                <pre className="bg-[#101828] text-emerald-400 p-4 rounded-2xl text-[11px] font-mono overflow-x-auto border border-slate-800">
                   {JSON.stringify(inspectedApp.formData, null, 2)}
                 </pre>
               </div>
 
               {inspectedApp.reviewDecisions && inspectedApp.reviewDecisions.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Adjudication Decisions</h4>
+                  <h4 className="text-xs font-bold text-[#101828] uppercase tracking-wider mb-2">Adjudication Decisions History</h4>
                   <div className="space-y-2">
                     {inspectedApp.reviewDecisions.map((dec) => (
-                      <div key={dec.id} className="p-3 bg-slate-50 border rounded-lg text-xs">
-                        <span className="font-bold">{dec.decision}</span> by {dec.officerName} on{' '}
-                        {new Date(dec.createdAt).toLocaleString()}
-                        {dec.reason && <p className="mt-1 text-slate-700">Reason: {dec.reason}</p>}
-                        {dec.notes && <p className="text-slate-500">Notes: {dec.notes}</p>}
+                      <div key={dec.id} className="p-3.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#101828]">{dec.decision}</span>
+                          <span className="text-[10px] text-slate-400">{new Date(dec.createdAt).toLocaleString()}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">Adjudicated by: <span className="font-semibold text-slate-700">{dec.officerName}</span></p>
+                        {dec.reason && <p className="text-slate-800 font-medium bg-rose-50 border border-rose-200 p-2 rounded-lg text-[11px]">Reason: {dec.reason}</p>}
+                        {dec.notes && <p className="text-slate-600 text-[11px]">Notes: {dec.notes}</p>}
                       </div>
                     ))}
                   </div>
@@ -840,12 +895,12 @@ export const AdminDashboard: React.FC = () => {
               )}
             </div>
 
-            <div className="px-6 py-3 bg-slate-50 border-t flex justify-end">
+            <div className="px-6 py-3.5 bg-[#F8FAFC] border-t border-slate-100 flex justify-end">
               <button
                 onClick={() => setInspectedApp(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-semibold text-slate-800"
+                className="px-5 py-2 bg-slate-200 hover:bg-slate-300 rounded-xl text-xs font-bold text-[#101828] transition"
               >
-                Close
+                Close Surveillance
               </button>
             </div>
           </div>
