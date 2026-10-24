@@ -37,12 +37,26 @@ export const InstallPwaPrompt: React.FC<InstallPwaPromptProps> = ({
       setDeferredPrompt(e);
     };
 
+    // 4. Listen for manual trigger from UI buttons
+    const handleManualTrigger = () => {
+      setIsDismissed(false);
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+      } else if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())) {
+        setShowIosTip(true);
+      } else {
+        alert('To install this app on your device:\n\n1. In Chrome, tap the menu (⋮) and select "Install app" or "Add to Home screen".\n2. In Safari, tap Share (⎋) and select "Add to Home Screen".');
+      }
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('trigger-pwa-install', handleManualTrigger);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('trigger-pwa-install', handleManualTrigger);
     };
-  }, []);
+  }, [deferredPrompt]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {

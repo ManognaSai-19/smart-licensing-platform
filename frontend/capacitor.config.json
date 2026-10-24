@@ -1,0 +1,10 @@
+{
+  "appId": "in.gov.licensing.smart",
+  "appName": "Smart Licensing",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "http://10.212.150.210:5173",
+    "cleartext": true
+  }
+}

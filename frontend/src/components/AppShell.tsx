@@ -16,6 +16,8 @@ import {
   FlaskConical,
   Mic,
   ChevronDown,
+  Smartphone,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -239,6 +241,20 @@ export const AppShell: React.FC<AppShellProps> = ({
                   <span>Accessibility Preferences</span>
                 </button>
 
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('trigger-pwa-install'));
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs text-slate-700 hover:bg-[#EAF2FF] hover:text-[#2563EB] flex items-center gap-2"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-[#2563EB]" />
+                  <span className="flex items-center gap-1">
+                    <span>Install Mobile App</span>
+                    <Sparkles className="w-3 h-3 text-[#2563EB]" />
+                  </span>
+                </button>
+
                 <div className="border-t border-slate-100 my-1" />
 
                 <button
@@ -391,31 +407,52 @@ export const AppShell: React.FC<AppShellProps> = ({
         </main>
       </div>
 
-      {/* MOBILE PERSISTENT BOTTOM NAVIGATION BAR */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-2 flex items-center justify-around z-40 shadow-lg">
-        {navItems.slice(0, 5).map((item) => {
-          const Icon = item.icon;
-          const isActive = activeNav === item.key;
+      {/* MOBILE FLOATING VOICE ACTION BUTTON (FAB) */}
+      {onTriggerVoice && (
+        <button
+          type="button"
+          onClick={onTriggerVoice}
+          title="Voice Assistant"
+          aria-label="Activate Voice Assistant"
+          className="md:hidden fixed bottom-20 right-4 z-40 w-12 h-12 rounded-2xl bg-[#2563EB] text-white shadow-xl shadow-blue-500/30 flex items-center justify-center border-2 border-white active:scale-95 transition-transform"
+        >
+          <Mic className="w-5 h-5 animate-pulse" />
+        </button>
+      )}
 
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => handleNavClick(item.key)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-bold transition relative ${
-                isActive ? 'text-[#2563EB]' : 'text-[#64748B] hover:text-[#0F172A]'
-              }`}
-            >
-              <div className="relative">
-                <Icon className="w-5 h-5" />
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-[#B91C1C] ring-1 ring-white" />
-                )}
-              </div>
-              <span className="truncate max-w-[64px]">{item.label}</span>
-            </button>
-          );
-        })}
+      {/* MOBILE PERSISTENT BOTTOM NAVIGATION BAR */}
+      <nav
+        aria-label="Mobile Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 px-2 pt-2 z-40 shadow-lg"
+        style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <div className="flex items-center justify-around max-w-md mx-auto">
+          {navItems.slice(0, 5).map((item) => {
+            const Icon = item.icon;
+            const isActive = activeNav === item.key;
+
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => handleNavClick(item.key)}
+                className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl text-[10px] font-bold transition-all relative ${
+                  isActive
+                    ? 'text-[#2563EB] bg-[#EAF2FF] shadow-2xs scale-105'
+                    : 'text-[#64748B] hover:text-[#0F172A] active:scale-95'
+                }`}
+              >
+                <div className="relative">
+                  <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <span className="absolute -top-1 -right-2 w-2.5 h-2.5 rounded-full bg-[#B91C1C] ring-2 ring-white" />
+                  )}
+                </div>
+                <span className="truncate max-w-[62px] leading-tight">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
