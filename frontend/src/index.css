@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* User-Defined Exact Color Palette */
-  --color-midnight-navy: #101828;  /* Navigation, text */
-  --color-royal-blue: #2563eb;     /* Primary actions */
-  --color-ice-blue: #eaf2ff;       /* Highlights */
-  --color-cloud-white: #f8fafc;    /* Page backgrounds */
-  --color-success-green: #15803d;  /* Approved */
-  --color-amber-review: #b45309;   /* Review required */
+  /* =========================================================================
+     DESIGN SYSTEM TOKENS (Strict 9-Color Palette)
+     ========================================================================= */
+  --color-midnight-navy: #101828;  /* Headers, primary brand identity, dark surfaces */
+  --color-primary-blue: #2563eb;   /* Primary actions, active highlights, key CTAs */
+  --color-light-blue: #eaf2ff;     /* Accent backgrounds, active chips, icon pills */
+  --color-app-bg: #f8fafc;         /* Page base background */
+  --color-main-text: #0f172a;      /* Primary high-contrast typography */
+  --color-secondary-text: #64748b; /* Subtitles, metadata, secondary copy */
+  --color-success: #15803d;        /* Approved statuses, passed validations */
+  --color-warning: #b45309;        /* Review required, advisory warnings */
+  --color-error: #b91c1c;          /* Validation errors, rejected statuses */
 
-  /* Palette shortcuts */
+  /* Aliases & Utility mappings */
   --color-navy: #101828;
   --color-royal: #2563eb;
   --color-ice: #eaf2ff;
   --color-cloud: #f8fafc;
-  --color-success: #15803d;
-  --color-amber: #b45309;
 
-  /* Brand Scale */
+  /* Extended Brand Scale */
   --color-brand-50: #eaf2ff;
   --color-brand-100: #eaf2ff;
   --color-brand-200: #cfe0fc;
@@ -30,36 +33,18 @@
   --color-brand-900: #101828;
   --color-brand-950: #0a0f1a;
 
-  /* Seamless mapping for existing classes */
-  --color-indigo-50: #eaf2ff;
-  --color-indigo-100: #eaf2ff;
-  --color-indigo-200: #cfe0fc;
-  --color-indigo-300: #9fc1f9;
-  --color-indigo-400: #609bf4;
-  --color-indigo-500: #3b82f6;
-  --color-indigo-600: #2563eb;
-  --color-indigo-700: #1d4ed8;
-  --color-indigo-800: #1e3a8a;
-  --color-indigo-900: #101828;
-  --color-indigo-950: #101828;
-
-  --color-burgundy-50: #eaf2ff;
-  --color-burgundy-100: #eaf2ff;
-  --color-burgundy-200: #cfe0fc;
-  --color-burgundy-500: #2563eb;
-  --color-burgundy-600: #2563eb;
-  --color-burgundy-700: #1d4ed8;
-  --color-burgundy-800: #101828;
-  --color-burgundy-900: #101828;
-  --color-burgundy-950: #0a0f1a;
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #101828;
+  color: #0f172a;
   background-color: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -72,10 +57,133 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* =========================================================================
+   ACCESSIBILITY & FOCUS RING STANDARDS
+   ========================================================================= */
+:focus-visible {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 2px !important;
+}
+
+/* Accessible Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Large text mode for accessibility toggle */
+.text-lg-mode {
+  font-size: 112.5%;
+}
+
+/* =========================================================================
+   SHARED DESIGN SYSTEM UTILITY PATTERNS
+   ========================================================================= */
+.card-base {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease-in-out;
+}
+
+.card-interactive {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-interactive:hover {
+  border-color: #2563eb;
+  box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: #f8fafc;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  color: #0f172a;
+  transition: all 0.15s ease-in-out;
+}
+
+.input-field:focus {
+  background-color: #ffffff;
+  border-color: #2563eb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
 }
