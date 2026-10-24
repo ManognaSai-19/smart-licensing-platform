@@ -1,0 +1,29 @@
+services:
+  # Spring Boot Backend Web Service
+  - type: web
+    name: smart-licensing-backend
+    env: docker
+    dockerfilePath: Dockerfile.backend
+    plan: free
+    region: oregon
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: smart-licensing-db
+          property: connectionString
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+
+  # Frontend Web Service
+  - type: web
+    name: smart-licensing-mobile-app
+    env: docker
+    dockerfilePath: Dockerfile.frontend
+    plan: free
+    region: oregon
+
+databases:
+  # Managed PostgreSQL Database
+  - name: smart-licensing-db
+    plan: free
+    region: oregon
