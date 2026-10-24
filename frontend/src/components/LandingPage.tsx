@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import {
-  Search,
   Mic,
-  Sparkles,
   FileCheck,
-  Clock,
+  BarChart3,
   ArrowRight,
-  Shield,
-  CheckCircle2,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ChevronLeft,
+  Globe,
   Sliders,
-  ChevronRight,
+  Check,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -22,589 +27,849 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  onLoginClick,
-  onRegisterClick,
-  onExploreServices,
   onOpenAccessibility,
   language,
   onLanguageChange,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const { login, register } = useAuth();
 
-  const searchSuggestions = [
-    { label: language === 'te' ? 'డ్రైవింగ్ లైసెన్స్' : 'Driving License Renewal', query: 'Driving' },
-    { label: language === 'te' ? 'ట్రేడ్ లైసెన్స్' : 'Trade License Permit', query: 'Trade' },
-    { label: language === 'te' ? 'భవన నిర్మాణ అనుమతి' : 'Building Permit', query: 'Building' },
-    { label: language === 'te' ? 'నివాస ధృవీకరణ' : 'Residence Certificate', query: 'Residence' },
-  ];
+  // Mobile navigation state: 'hero' (Image 1 Left) or 'auth' (Image 1 Right)
+  const [mobileView, setMobileView] = useState<'hero' | 'auth'>('hero');
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  // Auth form state (used in Desktop right panel & Mobile auth view)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onExploreServices();
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      if (authMode === 'login') {
+        await login({ email, password });
+      } else {
+        if (!fullName.trim()) {
+          setError('Please enter your full legal name.');
+          setSubmitting(false);
+          return;
+        }
+        await register({ email, password, fullName, phoneNumber });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please verify your credentials.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSuggestionClick = (_query: string) => {
-    onExploreServices();
+  const handleQuickDemo = async (type: 'citizen' | 'transport' | 'municipal' | 'admin') => {
+    setError(null);
+    setSubmitting(true);
+    let demoEmail = '';
+    let demoPass = '';
+
+    if (type === 'citizen') {
+      demoEmail = 'citizen.tester@licensing.gov.in';
+      demoPass = 'Citizen@123';
+    } else if (type === 'transport') {
+      demoEmail = 'officer.transport@licensing.gov.in';
+      demoPass = 'Officer@123';
+    } else if (type === 'municipal') {
+      demoEmail = 'officer.municipal@licensing.gov.in';
+      demoPass = 'Officer@123';
+    } else if (type === 'admin') {
+      demoEmail = 'admin@licensing.gov.in';
+      demoPass = 'Admin@123';
+    }
+
+    setEmail(demoEmail);
+    setPassword(demoPass);
+
+    try {
+      await login({ email: demoEmail, password: demoPass });
+    } catch (err: any) {
+      setError(err.message || 'Demo login failed.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans selection:bg-[#EAF2FF] selection:text-[#2563EB]">
-      {/* 1. TOP OFFICIAL STATE BANNER */}
-      <div className="w-full bg-[#101828] text-slate-300 px-4 sm:px-8 py-2 text-xs flex items-center justify-between border-b border-slate-800">
-        <div className="flex items-center gap-2.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="font-medium tracking-tight text-[11px] sm:text-xs">
-            {language === 'te'
-              ? 'తెలంగాణ & ఆంధ్రప్రదేశ్ ప్రభుత్వ అధికారిక డిజిటల్ లైసెన్సింగ్ పోర్టల్'
-              : 'Government Public Digital Licensing & Authorisation Portal'}
-          </span>
-        </div>
-
-        {/* Bilingual Language Switcher & Accessibility Shortcut */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onOpenAccessibility}
-            className="hidden sm:inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition text-xs font-medium"
-            title="Accessibility Preferences"
-          >
-            <Sliders className="w-3.5 h-3.5 text-blue-400" />
-            <span>Accessibility</span>
-          </button>
-
-          <span className="text-slate-600 hidden sm:inline">|</span>
-
-          <div className="flex items-center gap-1 bg-white/10 rounded-lg p-0.5 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => onLanguageChange('en')}
-              className={`px-2 py-0.5 rounded transition ${
-                language === 'en' ? 'bg-[#2563EB] text-white font-bold' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => onLanguageChange('te')}
-              className={`px-2 py-0.5 rounded transition ${
-                language === 'te' ? 'bg-[#2563EB] text-white font-bold' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              తెలుగు
-            </button>
+  // Reusable Platform Brand Logo
+  const BrandLogo = ({ size = 'normal' }: { size?: 'normal' | 'large' }) => (
+    <div className="flex items-center gap-3">
+      <div
+        className={`${
+          size === 'large' ? 'w-13 h-13 rounded-2xl' : 'w-11 h-11 rounded-2xl'
+        } bg-gradient-to-tr from-[#2563EB] to-[#60A5FA] p-0.5 shadow-md shadow-blue-500/20 flex items-center justify-center shrink-0 relative overflow-hidden`}
+      >
+        <div className="relative w-full h-full bg-[#2563EB] rounded-[14px] flex items-center justify-center">
+          {/* Overlapping layered white cards */}
+          <div className="absolute top-2 left-2 w-5 h-6 bg-white/40 rounded-[5px] rotate-[-6deg]" />
+          <div className="absolute top-2.5 left-3 w-5 h-6 bg-white/70 rounded-[5px] rotate-[3deg]" />
+          {/* Central checkmark badge */}
+          <div className="relative w-5 h-5 rounded-full bg-[#1D4ED8] flex items-center justify-center shadow-xs">
+            <Check className="w-3.5 h-3.5 text-white stroke-[3.5]" />
           </div>
         </div>
       </div>
+      <div>
+        <span className="font-black text-[#0F172A] text-lg sm:text-xl tracking-tight leading-tight block">
+          Smart
+        </span>
+        <span className="text-xs font-semibold text-[#64748B] tracking-tight leading-tight block -mt-0.5">
+          Licensing Platform
+        </span>
+      </div>
+    </div>
+  );
 
-      {/* 2. MAIN HEADER NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 h-18 flex items-center justify-between">
-          {/* Left: Brand Identity */}
-          <div className="flex items-center gap-8">
-            <div
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-2xl bg-[#101828] text-white flex items-center justify-center font-black shadow-md border border-slate-800 group-hover:bg-[#2563EB] transition-colors">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="font-extrabold text-base tracking-tight text-[#0F172A] block leading-none">
-                  Smart Digital Licensing
-                </span>
-                <span className="text-[11px] font-semibold text-[#64748B] tracking-wide mt-1 block">
-                  Unified State Platform
-                </span>
-              </div>
-            </div>
+  // Reusable Government Capitol Dome SVG Silhouette
+  const CapitolDomeSilhouette = () => (
+    <svg
+      viewBox="0 0 400 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-full text-[#2563EB] opacity-[0.07] pointer-events-none select-none"
+    >
+      <path
+        d="M200 10V20M200 20C185 20 170 30 170 50H230C230 30 215 20 200 20ZM160 50H240V56H160V50ZM150 56H250V62H150V56ZM145 62L200 75L255 62H145ZM140 75H260V80H140V75ZM150 80V105M170 80V105M190 80V105M210 80V105M230 80V105M250 80V105ZM130 105H270V115H130V105ZM100 115H300V120H100V115ZM50 115H100V120H50V115ZM300 115H350V120H300V115Z"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1 text-xs font-bold text-[#64748B]">
-              <a
-                href="#home"
-                className="px-3.5 py-2 rounded-xl text-[#0F172A] hover:bg-slate-100 transition"
-              >
-                Home
-              </a>
-              <button
-                type="button"
-                onClick={onExploreServices}
-                className="px-3.5 py-2 rounded-xl hover:text-[#0F172A] hover:bg-slate-100 transition"
-              >
-                Services
-              </button>
-              <a
-                href="#how-it-works"
-                className="px-3.5 py-2 rounded-xl hover:text-[#0F172A] hover:bg-slate-100 transition"
-              >
-                How It Works
-              </a>
-              <a
-                href="#features"
-                className="px-3.5 py-2 rounded-xl hover:text-[#0F172A] hover:bg-slate-100 transition"
-              >
-                Features
-              </a>
-              <a
-                href="#help"
-                className="px-3.5 py-2 rounded-xl hover:text-[#0F172A] hover:bg-slate-100 transition"
-              >
-                Help & Guidelines
-              </a>
-            </nav>
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans selection:bg-[#EAF2FF] selection:text-[#2563EB]">
+      {/* =========================================================================
+          DESKTOP & TABLET VIEW (Matches Image 2 - Split Screen Layout)
+          ========================================================================= */}
+      <div className="hidden lg:flex min-h-screen w-full">
+        {/* LEFT COLUMN: HERO, VALUE PROPOSITIONS & ROBOT ILLUSTRATION (60% Width) */}
+        <div className="w-[58%] xl:w-[60%] p-8 xl:p-14 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-white via-[#F8FAFC] to-[#EFF6FF]/60 border-r border-slate-200/80">
+          {/* Background Ambient Glow & Dome */}
+          <div className="absolute top-1/4 -left-20 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 max-w-lg mx-auto opacity-80 pointer-events-none">
+            <CapitolDomeSilhouette />
           </div>
 
-          {/* Right: Action Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Top Brand Logo */}
+          <div className="relative z-10 flex items-center justify-between">
+            <BrandLogo />
             <button
               type="button"
-              onClick={onLoginClick}
-              className="px-4 py-2 text-xs font-bold text-[#0F172A] hover:text-[#2563EB] hover:bg-slate-100 rounded-xl transition"
+              onClick={onOpenAccessibility}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white/80 hover:bg-white text-xs font-semibold text-slate-600 hover:text-[#2563EB] shadow-xs transition"
             >
-              {language === 'te' ? 'లాగిన్' : 'Login'}
-            </button>
-
-            <button
-              type="button"
-              onClick={onRegisterClick}
-              className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-98 flex items-center gap-1.5"
-            >
-              <span>{language === 'te' ? 'ప్రారంభించండి' : 'Get Started'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <Sliders className="w-3.5 h-3.5 text-[#2563EB]" />
+              <span>Accessibility</span>
             </button>
           </div>
-        </div>
-      </header>
 
-      {/* 3. HERO SECTION (SPLIT LAYOUT ON DESKTOP, STACKED ON MOBILE) */}
-      <section id="home" className="relative pt-10 pb-16 sm:py-20 lg:py-24 px-4 sm:px-8 overflow-hidden bg-gradient-to-b from-[#EAF2FF]/50 via-[#F8FAFC] to-[#F8FAFC]">
-        {/* Subtle decorative background blur orbs */}
-        <div className="absolute top-10 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-20 right-1/4 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          {/* Left Column: Headline, Copy, CTAs, Search */}
-          <div className="lg:col-span-7 space-y-6 sm:space-y-8 text-center lg:text-left">
-            {/* Pill Tag */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAF2FF] border border-[#2563EB]/20 text-[#2563EB] text-xs font-bold shadow-2xs">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Next-Gen Smart Citizen Licensing</span>
-            </div>
-
-            {/* Exact Required Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#101828] tracking-tight leading-[1.12]">
-              {language === 'te' ? (
-                <>
-                  మీ లైసెన్సులు. <br />
-                  <span className="text-[#2563EB]">సులభం, వేగవంతం,</span> మీ వాయిస్‌తో.
-                </>
-              ) : (
-                <>
-                  Your licenses. <br />
-                  <span className="text-[#2563EB]">Simpler, faster,</span> with your voice.
-                </>
-              )}
+          {/* Main Hero Copy */}
+          <div className="relative z-10 my-auto py-6 max-w-xl">
+            <h1 className="text-4xl xl:text-5xl font-black text-[#0F172A] tracking-tight leading-[1.12]">
+              Your licenses.{' '}
+              <span className="text-[#2563EB] block mt-1">
+                Simpler, faster, with your voice.
+              </span>
             </h1>
 
-            {/* Exact Required Supporting Text */}
-            <p className="text-sm sm:text-lg text-[#64748B] leading-relaxed max-w-2xl mx-auto lg:mx-0 font-normal">
+            <p className="text-sm xl:text-base text-[#64748B] mt-4 leading-relaxed font-normal">
               {language === 'te'
-                ? 'వాయిస్ గైడెన్స్, ఇంటెలిజెంట్ డాక్యుమెంట్ చెక్స్ మరియు పారదర్శకమైన అప్లికేషన్ ట్రాకింగ్‌తో సేవల కోసం దరఖాస్తు చేసుకోండి—అన్నీ ఒకే వేదికపై.'
-                : 'Apply for services with voice guidance, intelligent document checks, and transparent application tracking—all in one place.'}
+                ? 'వాయిస్ మార్గదర్శకత్వం, సమర్థవంతమైన పత్రాల తనిఖీ మరియు పారదర్శక దరఖాస్తు ట్రాకింగ్‌తో ప్రభుత్వ సేవలను పొందండి.'
+                : 'Apply for services with voice guidance, intelligent document checks, and transparent application tracking — all in one place.'}
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
-              <button
-                type="button"
-                onClick={onRegisterClick}
-                className="w-full sm:w-auto px-7 py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-extrabold text-sm rounded-2xl shadow-md hover:shadow-lg transition-all active:scale-98 flex items-center justify-center gap-2"
-              >
-                <span>{language === 'te' ? 'ఇప్పుడే ప్రారంభించండి' : 'Get Started Now'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={onExploreServices}
-                className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-50 border border-slate-300 text-[#0F172A] font-bold text-sm rounded-2xl shadow-xs hover:border-[#2563EB] transition-all flex items-center justify-center gap-2"
-              >
-                <span>{language === 'te' ? 'సేవలను అన్వేషించండి' : 'Explore 50+ Services'}</span>
-              </button>
-            </div>
-
-            {/* Quick Search Widget */}
-            <div className="pt-2 max-w-xl mx-auto lg:mx-0">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <div className="relative flex items-center bg-white rounded-2xl border border-slate-200/90 shadow-sm focus-within:ring-2 focus-within:ring-[#2563EB] focus-within:border-[#2563EB] transition-all">
-                  <Search className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder={language === 'te' ? 'సేవ కోసం శోధించండి (ఉదా: డ్రైవింగ్, ట్రేడ్)...' : 'Search licenses & permits (e.g., Driving, Trade, Building)...'}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-28 py-3.5 bg-transparent text-xs sm:text-sm text-[#0F172A] placeholder-slate-400 font-medium focus:outline-none rounded-2xl"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-2 px-4 py-2 bg-[#101828] hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition"
-                  >
-                    Search
-                  </button>
+            {/* 3 Feature Highlight Bullets with Circular Badges */}
+            <div className="mt-8 space-y-4">
+              {/* Feature 1 */}
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <Mic className="w-5 h-5" />
                 </div>
-              </form>
+                <div>
+                  <h3 className="text-sm font-bold text-[#0F172A]">Voice Assistance</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-medium">
+                    Complete forms using speech or text.
+                  </p>
+                </div>
+              </div>
 
-              {/* Suggestions */}
-              <div className="flex items-center gap-2 flex-wrap text-xs text-[#64748B] mt-2.5">
-                <span className="font-semibold text-[11px] uppercase tracking-wider text-slate-400">Popular:</span>
-                {searchSuggestions.map((item) => (
-                  <button
-                    key={item.query}
-                    type="button"
-                    onClick={() => handleSuggestionClick(item.query)}
-                    className="text-[#2563EB] hover:underline font-semibold text-xs"
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              {/* Feature 2 */}
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <FileCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#0F172A]">Smart Document Checks</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-medium">
+                    Understand missing fields and possible mismatches.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Trust Badges Strip */}
-            <div className="pt-4 border-t border-slate-200/80 grid grid-cols-3 gap-3 text-left">
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-[#101828]">100%</div>
-                <div className="text-[11px] text-[#64748B] font-medium">Digital Workflow</div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-[#2563EB]">AI</div>
-                <div className="text-[11px] text-[#64748B] font-medium">Pre-Screening</div>
-              </div>
-              <div>
-                <div className="text-xl sm:text-2xl font-black text-[#15803D]">Real-Time</div>
-                <div className="text-[11px] text-[#64748B] font-medium">SLA Tracking</div>
+              {/* Feature 3 */}
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#0F172A]">Transparent Tracking</h3>
+                  <p className="text-xs text-[#64748B] mt-0.5 font-medium">
+                    Know your application's current status and next step.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Visual Journey & Voice Assistant Showcase */}
-          <div className="lg:col-span-5 relative">
-            {/* Main Showcase Container */}
-            <div className="relative bg-gradient-to-br from-[#101828] via-[#162544] to-[#1E3A8A] rounded-3xl p-6 sm:p-7 text-white shadow-2xl border border-slate-700/50 space-y-5">
-              {/* Card Header: Device status & Official Portal Badge */}
-              <div className="flex items-center justify-between pb-4 border-b border-white/10 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center font-bold">
-                    🏛️
+          {/* Central Visual Showcase: Application Stepper + Friendly Robot with Speech Bubble */}
+          <div className="relative z-10 mt-auto pt-4 flex items-end justify-between gap-6 max-w-xl">
+            {/* Mock Application Card */}
+            <div className="flex-1 bg-white/90 backdrop-blur-md rounded-2xl p-4 border border-slate-200/90 shadow-lg shadow-blue-500/5">
+              <div className="flex items-center gap-1.5 pb-2.5 border-b border-slate-100">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                <span className="text-[11px] font-bold text-slate-700 ml-2">New Application</span>
+              </div>
+              <div className="mt-3 space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-[#2563EB] font-bold">
+                  <div className="w-4 h-4 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px]">
+                    ✓
+                  </div>
+                  <span>Personal Details</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 pl-6 text-[11px]">
+                  <span>Service Details</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 pl-6 text-[11px]">
+                  <span>Upload Documents</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 pl-6 text-[11px]">
+                  <span>Review & Submit</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cute Friendly Robot with Speech Bubble */}
+            <div className="relative flex flex-col items-center shrink-0">
+              {/* Speech Bubble */}
+              <div className="relative -top-2 bg-white rounded-2xl px-3.5 py-2 shadow-md border border-slate-200/80 text-xs font-bold text-[#0F172A] whitespace-nowrap animate-bounce duration-1000">
+                <span>Hi! How can I help you today?</span>
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-slate-200 rotate-45" />
+              </div>
+
+              {/* 3D-Styled Cute White Robot SVG */}
+              <div className="relative w-28 h-28">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-md">
+                  {/* Antenna */}
+                  <line x1="60" y1="20" x2="60" y2="35" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
+                  <circle cx="60" cy="18" r="5" fill="#3B82F6" />
+                  {/* Robot Head */}
+                  <rect x="25" y="32" width="70" height="52" rx="26" fill="url(#robotGrad)" stroke="#CBD5E1" strokeWidth="1.5" />
+                  {/* Ear pods */}
+                  <rect x="18" y="46" width="8" height="24" rx="4" fill="#3B82F6" />
+                  <rect x="94" y="46" width="8" height="24" rx="4" fill="#3B82F6" />
+                  {/* Visor Screen */}
+                  <rect x="33" y="40" width="54" height="36" rx="18" fill="#101828" />
+                  {/* Glowing Smiling Eyes */}
+                  <path d="M42 58C42 54 48 54 48 58" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M72 58C72 54 78 54 78 58" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+                  {/* Robot Body Collar */}
+                  <ellipse cx="60" cy="94" rx="22" ry="12" fill="#E2E8F0" />
+                  <ellipse cx="60" cy="92" rx="20" ry="10" fill="#FFFFFF" />
+                  {/* Gradient definition */}
+                  <defs>
+                    <linearGradient id="robotGrad" x1="25" y1="32" x2="95" y2="84" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#FFFFFF" />
+                      <stop offset="1" stopColor="#E2E8F0" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                {/* Floating Microphone Action Badge */}
+                <div className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-[#2563EB] text-white flex items-center justify-center shadow-md shadow-blue-500/30">
+                  <Mic className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: WELCOME BACK SIGN-IN PANEL (40% Width - Matches Image 2) */}
+        <div className="w-[42%] xl:w-[40%] bg-white p-8 xl:p-14 flex flex-col justify-between overflow-y-auto">
+          {/* Top Language Selector */}
+          <div className="flex justify-end items-center">
+            <div className="flex items-center gap-1.5 bg-[#F8FAFC] border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700">
+              <Globe className="w-3.5 h-3.5 text-[#2563EB]" />
+              <button
+                type="button"
+                onClick={() => onLanguageChange(language === 'en' ? 'te' : 'en')}
+                className="hover:text-[#2563EB] transition"
+              >
+                {language === 'en' ? 'English (EN)' : 'తెలుగు (TE)'}
+              </button>
+            </div>
+          </div>
+
+          {/* Centered Auth Card */}
+          <div className="my-auto max-w-sm w-full mx-auto py-6">
+            <div className="mb-6">
+              <h2 className="text-2xl xl:text-3xl font-black text-[#0F172A] tracking-tight">
+                {authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
+              </h2>
+              <p className="text-xs text-[#64748B] mt-1 font-medium">
+                {authMode === 'login' ? 'Sign in to your account' : 'Register for digital license services'}
+              </p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-[#B91C1C]" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {authMode === 'register' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Full Legal Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter your full name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    />
                   </div>
                   <div>
-                    <span className="font-extrabold block text-xs">Licensing Assistant</span>
-                    <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      Live & Listening
-                    </span>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="Enter mobile number"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    />
                   </div>
-                </div>
+                </>
+              )}
 
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#2563EB]/40 border border-[#2563EB] text-[#EAF2FF]">
-                  Bilingual Voice AI
-                </span>
-              </div>
-
-              {/* Voice Interactive Simulation */}
-              <div className="p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center shrink-0 shadow-md animate-bounce-subtle">
-                    <Mic className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-blue-200">
-                      Voice Guidance Prompt
-                    </span>
-                    <p className="text-xs sm:text-sm font-medium text-slate-100 leading-snug">
-                      {language === 'te'
-                        ? '"దయచేసి మీ ఆధార్ కార్డ్ లేదా ప్రస్తుత లైసెన్స్ సంఖ్యను చెప్పండి..."'
-                        : '"Please speak your Aadhaar or Driving License number to auto-fill..."'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Animated Soundwave Visualizer Bars */}
-                <div className="flex items-center justify-center gap-1.5 pt-1">
-                  <span className="w-1 h-3 bg-blue-400 rounded-full animate-pulse" />
-                  <span className="w-1 h-6 bg-blue-300 rounded-full animate-pulse delay-75" />
-                  <span className="w-1 h-4 bg-blue-500 rounded-full animate-pulse delay-150" />
-                  <span className="w-1 h-7 bg-blue-200 rounded-full animate-pulse delay-100" />
-                  <span className="w-1 h-5 bg-blue-400 rounded-full animate-pulse delay-200" />
-                  <span className="w-1 h-3 bg-blue-300 rounded-full animate-pulse delay-75" />
+              {/* Email Address */}
+              <div>
+                <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Email address</label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  />
                 </div>
               </div>
 
-              {/* Journey Step Preview Card */}
-              <div className="bg-white rounded-2xl p-4 text-[#0F172A] shadow-md border border-slate-200 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-black text-[#2563EB]">
-                      DRL-2026-001
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#15803D]/10 text-[#15803D]">
-                      <CheckCircle2 className="w-3 h-3 text-[#15803D]" />
-                      <span>OCR VERIFIED</span>
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-400">Day 2 of 7</span>
-                </div>
-
-                <div>
-                  <h4 className="text-xs font-extrabold text-[#0F172A]">
-                    Driving License Renewal
-                  </h4>
-                  <p className="text-[11px] text-[#64748B]">Transport Department &bull; Hyderabad</p>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-semibold text-slate-500">
-                    <span>Adjudication Progress</span>
-                    <span className="text-[#2563EB] font-bold">75%</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#2563EB] rounded-full w-3/4 transition-all" />
-                  </div>
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Password</label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600"
+                    aria-label="Toggle password visibility"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
-              {/* Floating Fast-Track Pill */}
-              <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-emerald-400" />
-                  <span className="font-bold text-slate-200">Guaranteed SLA: 7 Days</span>
+              {/* Remember me & Forgot Password */}
+              {authMode === 'login' && (
+                <div className="flex items-center justify-between text-xs pt-0.5">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-slate-600 font-medium">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-3.5 h-3.5 text-[#2563EB] rounded border-slate-300 focus:ring-[#2563EB]"
+                    />
+                    <span>Remember me</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => alert('Password reset link has been dispatched to your email.')}
+                    className="text-[#2563EB] hover:underline font-semibold"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
+              )}
+
+              {/* Primary Action Button: Sign In -> */}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 bg-[#2563EB] hover:bg-[#1D4ED8] active:bg-[#1E40AF] text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition disabled:opacity-50"
+              >
+                {submitting ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>{authMode === 'login' ? 'Sign In' : 'Create Account'}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Divider OR */}
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <span className="bg-white px-3">OR</span>
+              </div>
+            </div>
+
+            {/* Toggle Mode: Create a new account */}
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setAuthMode(authMode === 'login' ? 'register' : 'login');
+              }}
+              className="w-full py-2.5 bg-white border border-slate-200 hover:border-[#2563EB] text-[#2563EB] rounded-xl text-xs font-bold shadow-2xs transition"
+            >
+              {authMode === 'login' ? 'Create a new account' : 'Already have an account? Sign In'}
+            </button>
+
+            {/* 1-Click Quick Demo Sign-Ins for testing */}
+            <div className="mt-5 pt-4 border-t border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2 text-center">
+                Quick 1-Click Demo Login
+              </span>
+              <div className="grid grid-cols-2 gap-2 text-[11px] font-bold">
                 <button
                   type="button"
-                  onClick={onLoginClick}
-                  className="text-blue-300 hover:text-white font-bold text-xs flex items-center gap-1"
+                  onClick={() => handleQuickDemo('citizen')}
+                  className="p-2 rounded-lg bg-[#EAF2FF] text-[#2563EB] hover:bg-blue-100 transition truncate"
                 >
-                  <span>Track Status</span>
-                  <ChevronRight className="w-3 h-3" />
+                  Citizen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('transport')}
+                  className="p-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition truncate"
+                >
+                  Transport Officer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('municipal')}
+                  className="p-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition truncate"
+                >
+                  Municipal Officer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo('admin')}
+                  className="p-2 rounded-lg bg-purple-50 text-purple-700 hover:bg-purple-100 transition truncate"
+                >
+                  Admin
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Legal Footer Note */}
+          <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+            By signing in, you agree to our{' '}
+            <a href="#terms" className="underline hover:text-slate-600">
+              Terms of Service
+            </a>{' '}
+            and{' '}
+            <a href="#privacy" className="underline hover:text-slate-600">
+              Privacy Policy
+            </a>
+            .
+          </p>
         </div>
-      </section>
+      </div>
 
-      {/* 4. THREE FEATURE HIGHLIGHTS */}
-      <section id="features" className="py-16 sm:py-20 px-4 sm:px-8 bg-white border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold text-[#2563EB] uppercase tracking-wider bg-[#EAF2FF] px-3 py-1 rounded-full border border-[#2563EB]/20">
-              Core Capabilities
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#101828] tracking-tight">
-              Engineered for Simplicity & Speed
-            </h2>
-            <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-              Every step of the government licensing lifecycle has been refined to eliminate bureaucratic delays.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {/* Feature 1: Voice Assistance */}
-            <div className="p-7 rounded-3xl bg-[#F8FAFC] border border-slate-200 hover:border-[#2563EB] hover:shadow-lg transition-all group space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
-                <Mic className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-extrabold text-[#101828]">
-                Voice Assistance
-              </h3>
-              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-                Apply naturally in Telugu or English. Our conversational speech assistant reads questions aloud and transcribes your answers directly into forms.
-              </p>
-              <div className="pt-2 text-xs font-bold text-[#2563EB] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                <span>Supports Telugu & English</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </div>
+      {/* =========================================================================
+          MOBILE VIEW (Matches Image 1 - Screen 1 Left & Screen 1 Right)
+          ========================================================================= */}
+      <div className="lg:hidden flex-1 flex flex-col min-h-screen justify-between p-5 relative overflow-hidden bg-gradient-to-b from-[#EFF6FF]/60 via-white to-[#F8FAFC]">
+        {/* MOBILE VIEW A: LANDING / ONBOARDING SCREEN (Matches Image 1 Left) */}
+        {mobileView === 'hero' && (
+          <div className="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+            {/* Header: Logo */}
+            <div className="pt-2">
+              <BrandLogo />
             </div>
 
-            {/* Feature 2: Smart Document Checks */}
-            <div className="p-7 rounded-3xl bg-[#F8FAFC] border border-slate-200 hover:border-[#2563EB] hover:shadow-lg transition-all group space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
-                <FileCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-extrabold text-[#101828]">
-                Smart Document Checks
-              </h3>
-              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-                Automated OCR compares uploaded certificates and IDs against your entered form fields to catch discrepancies and typos before submission.
-              </p>
-              <div className="pt-2 text-xs font-bold text-[#2563EB] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                <span>Pre-flight typo prevention</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-
-            {/* Feature 3: Real-Time Tracking */}
-            <div className="p-7 rounded-3xl bg-[#F8FAFC] border border-slate-200 hover:border-[#2563EB] hover:shadow-lg transition-all group space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center group-hover:scale-105 transition-transform shadow-2xs">
-                <Clock className="w-7 h-7" />
-              </div>
-              <h3 className="text-lg font-extrabold text-[#101828]">
-                Real-Time Tracking
-              </h3>
-              <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-                View chronological timelines for every application, read specific officer adjudication feedback, and download tamper-proof official digital certificates.
-              </p>
-              <div className="pt-2 text-xs font-bold text-[#2563EB] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                <span>Instant milestone alerts</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. HOW IT WORKS SECTION (THE APPLICATION JOURNEY) */}
-      <section id="how-it-works" className="py-16 sm:py-20 px-4 sm:px-8 bg-[#F8FAFC]">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold text-[#2563EB] uppercase tracking-wider bg-[#EAF2FF] px-3 py-1 rounded-full border border-[#2563EB]/20">
-              The Journey
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#101828] tracking-tight">
-              How the Digital Platform Works
-            </h2>
-            <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-              From choosing your license to downloading your verified certificate in 4 transparent steps.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative">
-            {/* Step 1 */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 relative">
-              <div className="w-10 h-10 rounded-2xl bg-[#101828] text-white font-black text-sm flex items-center justify-center shadow-xs">
-                1
-              </div>
-              <h4 className="text-base font-bold text-[#101828]">Select Service</h4>
-              <p className="text-xs text-[#64748B] leading-relaxed">
-                Explore our catalog of transport and municipal licensing services with clear fees and processing timelines.
+            {/* Headline & Subtitle */}
+            <div className="mt-6">
+              <h1 className="text-3xl font-black text-[#0F172A] tracking-tight leading-[1.15]">
+                Your licenses.{' '}
+                <span className="text-[#2563EB] block mt-0.5">
+                  Simpler, faster, with your voice.
+                </span>
+              </h1>
+              <p className="text-xs text-[#64748B] mt-2.5 leading-relaxed font-normal">
+                Apply for services with voice guidance, intelligent document checks, and transparent application tracking —all in one place.
               </p>
             </div>
 
-            {/* Step 2 */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 relative">
-              <div className="w-10 h-10 rounded-2xl bg-[#2563EB] text-white font-black text-sm flex items-center justify-center shadow-xs">
-                2
+            {/* Central Graphic: Mock Smartphone + Cute Robot + Voice Wave */}
+            <div className="relative my-6 flex items-center justify-center">
+              {/* Background Dome Accent */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+                <CapitolDomeSilhouette />
               </div>
-              <h4 className="text-base font-bold text-[#101828]">Voice or Form Entry</h4>
-              <p className="text-xs text-[#64748B] leading-relaxed">
-                Provide applicant details using interactive voice dictation or the step-by-step digital wizard.
-              </p>
-            </div>
 
-            {/* Step 3 */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 relative">
-              <div className="w-10 h-10 rounded-2xl bg-[#101828] text-white font-black text-sm flex items-center justify-center shadow-xs">
-                3
-              </div>
-              <h4 className="text-base font-bold text-[#101828]">Smart OCR Check</h4>
-              <p className="text-xs text-[#64748B] leading-relaxed">
-                Upload your document proofs and let automated pre-screening cross-check your data before submitting.
-              </p>
-            </div>
-
-            {/* Step 4 */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-3 relative">
-              <div className="w-10 h-10 rounded-2xl bg-[#15803D] text-white font-black text-sm flex items-center justify-center shadow-xs">
-                4
-              </div>
-              <h4 className="text-base font-bold text-[#101828]">Digital Certificate</h4>
-              <p className="text-xs text-[#64748B] leading-relaxed">
-                Once reviewed by the officer, your official digital certificate is issued instantly with tamper-proof security.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center pt-4">
-            <button
-              type="button"
-              onClick={onRegisterClick}
-              className="px-6 py-3 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs rounded-xl shadow-xs transition"
-            >
-              Start Your First Application →
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. CLEAN FOOTER */}
-      <footer id="help" className="bg-[#101828] text-white pt-12 pb-8 px-4 sm:px-8 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-800">
-            {/* Brand Column */}
-            <div className="space-y-3 md:col-span-1">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#2563EB] text-white flex items-center justify-center font-bold">
-                  <Shield className="w-4 h-4 text-white" />
+              {/* Smartphone Frame Mockup */}
+              <div className="relative w-44 h-56 bg-white rounded-3xl p-3 border-2 border-blue-100 shadow-xl shadow-blue-500/10 flex flex-col justify-between -rotate-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs text-[#2563EB]">
+                    👤
+                  </div>
+                  <div className="space-y-1">
+                    <div className="w-14 h-2 bg-slate-200 rounded-full" />
+                    <div className="w-10 h-1.5 bg-slate-100 rounded-full" />
+                  </div>
                 </div>
-                <span className="font-extrabold text-sm tracking-tight">Smart Licensing</span>
+
+                <div className="space-y-2 my-auto pl-1">
+                  <div className="flex items-center gap-2 text-[10px] text-slate-700 font-bold">
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[8px]">✓</span>
+                    <span>License Form</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] text-slate-700 font-bold">
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[8px]">✓</span>
+                    <span>Document OCR</span>
+                  </div>
+                </div>
+
+                {/* Animated Soundwave pill */}
+                <div className="bg-[#2563EB] text-white py-1.5 px-3 rounded-full flex items-center justify-center gap-1 shadow-sm">
+                  <span className="w-1 h-3 bg-white rounded-full animate-pulse" />
+                  <span className="w-1 h-5 bg-white rounded-full animate-pulse" />
+                  <span className="w-1 h-2 bg-white rounded-full animate-pulse" />
+                  <span className="w-1 h-4 bg-white rounded-full animate-pulse" />
+                </div>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Official unified licensing and regulatory authorisations portal for public citizens and businesses.
-              </p>
+
+              {/* Cute Robot Floating Right */}
+              <div className="absolute -right-2 bottom-2 w-24 h-24 drop-shadow-lg">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                  <line x1="60" y1="20" x2="60" y2="35" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" />
+                  <circle cx="60" cy="18" r="5" fill="#3B82F6" />
+                  <rect x="25" y="32" width="70" height="52" rx="26" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.5" />
+                  <rect x="18" y="46" width="8" height="24" rx="4" fill="#3B82F6" />
+                  <rect x="94" y="46" width="8" height="24" rx="4" fill="#3B82F6" />
+                  <rect x="33" y="40" width="54" height="36" rx="18" fill="#101828" />
+                  <path d="M42 58C42 54 48 54 48 58" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M72 58C72 54 78 54 78 58" stroke="#38BDF8" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+
+                {/* Circular Blue Mic Badge */}
+                <div className="absolute -bottom-1 left-2 w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center shadow-md">
+                  <Mic className="w-4 h-4" />
+                </div>
+              </div>
             </div>
 
-            {/* Services Links */}
-            <div className="space-y-2 text-xs">
-              <h5 className="font-bold text-white uppercase tracking-wider text-[11px]">Popular Services</h5>
-              <ul className="space-y-1.5 text-slate-400">
-                <li><button type="button" onClick={onExploreServices} className="hover:text-white transition">Driving License Renewal</button></li>
-                <li><button type="button" onClick={onExploreServices} className="hover:text-white transition">Trade & Commercial Permit</button></li>
-                <li><button type="button" onClick={onExploreServices} className="hover:text-white transition">Building Permission</button></li>
-                <li><button type="button" onClick={onExploreServices} className="hover:text-white transition">Residence Certificates</button></li>
-              </ul>
+            {/* 3 Value Proposition Bullets */}
+            <div className="space-y-3.5 my-2">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center shrink-0">
+                  <Mic className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-[#0F172A]">Voice Assistance</h3>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">Complete forms using speech or text.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center shrink-0">
+                  <FileCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-[#0F172A]">Smart Document Checks</h3>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">Understand missing fields and possible mismatches.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#EAF2FF] text-[#2563EB] flex items-center justify-center shrink-0">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-[#0F172A]">Transparent Tracking</h3>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">Know your application's current status and next step.</p>
+                </div>
+              </div>
             </div>
 
-            {/* Accessibility & Help */}
-            <div className="space-y-2 text-xs">
-              <h5 className="font-bold text-white uppercase tracking-wider text-[11px]">Accessibility & Support</h5>
-              <ul className="space-y-1.5 text-slate-400">
-                <li><button type="button" onClick={onOpenAccessibility} className="hover:text-white transition">Language & Voice Settings</button></li>
-                <li><button type="button" onClick={onOpenAccessibility} className="hover:text-white transition">Screen Reader Optimisation</button></li>
-                <li><a href="#how-it-works" className="hover:text-white transition">Step-by-Step Guide</a></li>
-                <li><a href="#help" className="hover:text-white transition">Citizen Grievance Redressal</a></li>
-              </ul>
-            </div>
+            {/* Bottom Actions: Get Started -> & Carousel Dots */}
+            <div className="pt-4 pb-2 space-y-3">
+              <button
+                type="button"
+                onClick={() => setMobileView('auth')}
+                className="w-full py-3.5 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-98 text-white rounded-2xl text-xs font-bold shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
-            {/* Contact & Security */}
-            <div className="space-y-2 text-xs">
-              <h5 className="font-bold text-white uppercase tracking-wider text-[11px]">Helpdesk & Security</h5>
-              <p className="text-slate-400 text-xs">
-                Toll Free: <span className="text-white font-bold">1800-425-0001</span> (Mon-Sat, 9AM-6PM)
-              </p>
-              <p className="text-slate-400 text-xs">
-                Email: <span className="text-white font-mono">support@licensing.gov.in</span>
-              </p>
-              <div className="pt-1 flex items-center gap-1.5 text-[11px] text-emerald-400">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>256-bit SSL Encrypted & Secure</span>
+              {/* Pagination Dots */}
+              <div className="flex items-center justify-center gap-1.5 pt-1">
+                <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
               </div>
             </div>
           </div>
+        )}
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <p>&copy; {new Date().getFullYear()} Government Public Digital Services. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <button type="button" onClick={onOpenAccessibility} className="hover:text-slate-300 transition">Accessibility Statement</button>
-              <span>&bull;</span>
-              <button type="button" onClick={onLoginClick} className="hover:text-slate-300 transition">Officer Portal</button>
-              <span>&bull;</span>
-              <button type="button" onClick={onLoginClick} className="hover:text-slate-300 transition">Administrator Portal</button>
+        {/* MOBILE VIEW B: SIGN IN / REGISTRATION SCREEN (Matches Image 1 Right) */}
+        {mobileView === 'auth' && (
+          <div className="flex-1 flex flex-col justify-between animate-in fade-in duration-300">
+            {/* Top Navigation: Back Button & Language switch */}
+            <div className="flex items-center justify-between pt-1">
+              <button
+                type="button"
+                onClick={() => setMobileView('hero')}
+                className="p-2 -ml-2 rounded-xl text-slate-700 hover:bg-slate-100 flex items-center gap-1 text-xs font-bold"
+              >
+                <ChevronLeft className="w-5 h-5 text-slate-800" />
+                <span>Back</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onLanguageChange(language === 'en' ? 'te' : 'en')}
+                className="text-xs font-bold text-[#2563EB] bg-[#EAF2FF] px-2.5 py-1 rounded-xl"
+              >
+                {language === 'en' ? 'EN' : 'తెలుగు'}
+              </button>
+            </div>
+
+            {/* Centered Logo & Title */}
+            <div className="flex flex-col items-center text-center my-auto py-2">
+              <div className="mb-2">
+                <BrandLogo size="large" />
+              </div>
+
+              <h2 className="text-2xl font-black text-[#0F172A] tracking-tight mt-2">
+                {authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
+              </h2>
+              <p className="text-xs text-[#64748B] mt-1 font-medium">
+                {authMode === 'login' ? 'Sign in to your account' : 'Register for licensing services'}
+              </p>
+
+              {/* Form Container */}
+              <div className="w-full bg-white rounded-3xl p-5 border border-slate-200/90 shadow-md shadow-slate-100 mt-4 text-left">
+                {error && (
+                  <div className="mb-3 p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-[#B91C1C]" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-3.5">
+                  {authMode === 'register' && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0F172A] mb-1">Full Legal Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Enter your full name"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-[#0F172A] mb-1">Phone Number</label>
+                        <input
+                          type="tel"
+                          placeholder="Enter mobile number"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Email address</label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                      <input
+                        type="email"
+                        required
+                        placeholder="Enter your email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Password</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 text-xs bg-[#F8FAFC] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-3 text-slate-400"
+                        aria-label="Toggle password visibility"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {authMode === 'login' && (
+                    <div className="text-right">
+                      <button
+                        type="button"
+                        onClick={() => alert('Password reset link sent.')}
+                        className="text-[11px] text-[#2563EB] hover:underline font-semibold"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Primary Action Button: Sign In -> */}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-3 bg-[#2563EB] hover:bg-[#1D4ED8] active:scale-98 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition disabled:opacity-50"
+                  >
+                    {submitting ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <span>{authMode === 'login' ? 'Sign In' : 'Create Account'}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Divider OR */}
+                <div className="relative my-3.5">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-200" />
+                  </div>
+                  <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    <span className="bg-white px-2.5">OR</span>
+                  </div>
+                </div>
+
+                {/* Secondary Button: Create a new account */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setAuthMode(authMode === 'login' ? 'register' : 'login');
+                  }}
+                  className="w-full py-2.5 bg-white border border-slate-200 hover:border-[#2563EB] text-[#2563EB] rounded-xl text-xs font-bold shadow-2xs transition"
+                >
+                  {authMode === 'login' ? 'Create a new account' : 'Already have an account? Sign In'}
+                </button>
+              </div>
+
+              {/* 1-Click Quick Demo Sign-Ins */}
+              <div className="w-full mt-3 pt-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                  1-Click Demo Login
+                </span>
+                <div className="grid grid-cols-2 gap-1.5 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('citizen')}
+                    className="p-2 rounded-lg bg-[#EAF2FF] text-[#2563EB] active:scale-95 transition"
+                  >
+                    Citizen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('transport')}
+                    className="p-2 rounded-lg bg-slate-100 text-slate-700 active:scale-95 transition"
+                  >
+                    Transport Officer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('municipal')}
+                    className="p-2 rounded-lg bg-slate-100 text-slate-700 active:scale-95 transition"
+                  >
+                    Municipal Officer
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('admin')}
+                    className="p-2 rounded-lg bg-purple-50 text-purple-700 active:scale-95 transition"
+                  >
+                    Admin
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Subtle Capitol Silhouette */}
+            <div className="opacity-60 max-w-xs mx-auto pointer-events-none mt-2">
+              <CapitolDomeSilhouette />
             </div>
           </div>
-        </div>
-      </footer>
+        )}
+      </div>
     </div>
   );
 };
